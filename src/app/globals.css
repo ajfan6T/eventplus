@@ -1,26 +1,225 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ------------------------------------------------------------------ */
+/*  Eventplus — "Festive Kerala Premium" design system                */
+/*  cream · temple maroon · kasavu gold · deep green                  */
+/* ------------------------------------------------------------------ */
+
+@theme {
+  /* ---- Brand scales ---- */
+  --color-cream-50: #fffdf8;
+  --color-cream-100: #faf4e8;
+  --color-cream-200: #f3e9d6;
+  --color-cream-300: #e9dabf;
+  --color-cream-400: #dcc8a4;
+
+  --color-maroon-50: #fbeef1;
+  --color-maroon-100: #f6d7de;
+  --color-maroon-200: #e9aab8;
+  --color-maroon-300: #d97c92;
+  --color-maroon-400: #b8476a;
+  --color-maroon-500: #9a2f50;
+  --color-maroon-600: #7b1e3b;
+  --color-maroon-700: #5f162d;
+  --color-maroon-800: #460f20;
+  --color-maroon-900: #2f0a16;
+
+  --color-gold-50: #fdf8e9;
+  --color-gold-100: #f9edc7;
+  --color-gold-200: #f0d98c;
+  --color-gold-300: #e3c766;
+  --color-gold-400: #d4b246;
+  --color-gold-500: #c9a227;
+  --color-gold-600: #a9851c;
+  --color-gold-700: #836517;
+  --color-gold-800: #5e4810;
+
+  --color-green-50: #eef5f0;
+  --color-green-100: #d6e7dc;
+  --color-green-200: #a9cdb6;
+  --color-green-300: #74ab8a;
+  --color-green-400: #3f7d5c;
+  --color-green-500: #2c6044;
+  --color-green-600: #1f4d3a;
+  --color-green-700: #163a2c;
+  --color-green-800: #0e2a20;
+
+  --color-ink: #2b1a1e;
+  --color-ink-soft: #4a3a3e;
+
+  /* ---- Semantic tokens (used by UI primitives) ---- */
+  --color-background: #faf4e8;
+  --color-foreground: #2b1a1e;
+  --color-card: #fffdf8;
+  --color-card-foreground: #2b1a1e;
+  --color-popover: #fffdf8;
+  --color-popover-foreground: #2b1a1e;
+  --color-primary: #7b1e3b;
+  --color-primary-foreground: #fffdf8;
+  --color-secondary: #1f4d3a;
+  --color-secondary-foreground: #fffdf8;
+  --color-muted: #f3e9d6;
+  --color-muted-foreground: #7d6a5d;
+  --color-accent: #c9a227;
+  --color-accent-foreground: #2b1a1e;
+  --color-destructive: #c0392b;
+  --color-destructive-foreground: #fffdf8;
+  --color-border: #e6d8bf;
+  --color-input: #e6d8bf;
+  --color-ring: #c9a227;
+
+  /* ---- Typography (loaded via <link> in layout for fast, network-robust compiles) ---- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+
+  /* ---- Radii ---- */
+  --radius-sm: 0.5rem;
+  --radius: 0.75rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+  --radius-2xl: 2.25rem;
+
+  /* ---- Shadows (warm-tinted) ---- */
+  --shadow-soft: 0 2px 8px -2px rgb(123 30 59 / 0.08), 0 6px 24px -8px rgb(123 30 59 / 0.12);
+  --shadow-glow: 0 8px 40px -12px rgb(201 162 39 / 0.45);
+  --shadow-card: 0 1px 2px rgb(43 26 30 / 0.04), 0 8px 28px -12px rgb(43 26 30 / 0.12);
+  --shadow-lift: 0 18px 50px -18px rgb(43 26 30 / 0.28);
+
+  /* ---- Named keyframe animations ---- */
+  --animate-shimmer: shimmer 3s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-fade-up: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-spin-slow: spin 28s linear infinite;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ------------------------------------------------------------------ */
+/*  Base                                                              */
+/* ------------------------------------------------------------------ */
+@layer base {
+  * {
+    border-color: var(--color-border);
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv01";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-serif);
+    font-optical-sizing: auto;
+    letter-spacing: -0.015em;
+  }
+  ::selection {
+    background-color: var(--color-gold-200);
+    color: var(--color-maroon-800);
+  }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track { background: var(--color-cream-100); }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-cream-400);
+    border-radius: 999px;
+    border: 3px solid var(--color-cream-100);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-gold-400); }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ------------------------------------------------------------------ */
+/*  Motifs & utilities                                                */
+/* ------------------------------------------------------------------ */
+
+/* Gold foil gradient text */
+.text-gold-foil {
+  background: linear-gradient(100deg, #a9851c 0%, #e3c766 30%, #fff3cf 50%, #e3c766 70%, #a9851c 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: var(--animate-shimmer);
+}
+
+/* Kasavu — cream cloth with twin gold borders */
+.kasavu-border {
+  position: relative;
+}
+.kasavu-border::before,
+.kasavu-border::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--color-gold-500) 12%, var(--color-gold-300) 50%, var(--color-gold-500) 88%, transparent);
+}
+.kasavu-border::before { top: 0; }
+.kasavu-border::after { bottom: 0; }
+
+/* A thin gold rule used as a section divider */
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-gold-400), transparent);
+}
+
+/* Mandala / temple lamp radial backdrop */
+.bg-mandala {
+  background-image:
+    radial-gradient(circle at 50% 0%, rgb(201 162 39 / 0.10), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgb(123 30 59 / 0.06), transparent 40%),
+    radial-gradient(circle at 100% 80%, rgb(31 77 58 / 0.06), transparent 40%);
+}
+
+/* Subtle dotted "muthukuda" pattern overlay */
+.bg-dots {
+  background-image: radial-gradient(var(--color-cream-400) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Warm hero gradient */
+.bg-festive {
+  background:
+    radial-gradient(120% 120% at 80% -10%, rgb(201 162 39 / 0.16), transparent 50%),
+    radial-gradient(100% 100% at 0% 110%, rgb(31 77 58 / 0.12), transparent 50%),
+    linear-gradient(180deg, var(--color-cream-50), var(--color-cream-100));
+}
+
+/* Glass card */
+.glass {
+  background: rgb(255 253 248 / 0.72);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
