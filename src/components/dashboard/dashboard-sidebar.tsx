@@ -16,7 +16,7 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Mandala } from "@/components/decor/motifs";
-import { sampleEvent } from "@/lib/data/planner";
+import type { DemoEvent } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -97,10 +97,12 @@ export function DashboardSidebar({
   activeAnchor,
   onNavigate,
   className,
+  event,
 }: {
   activeAnchor: string;
   onNavigate?: () => void;
   className?: string;
+  event?: DemoEvent;
 }) {
   return (
     <div className={cn("flex h-full flex-col gap-6 px-4 py-6", className)}>
@@ -109,19 +111,21 @@ export function DashboardSidebar({
       </div>
 
       {/* Active event card */}
-      <div className="relative overflow-hidden rounded-2xl border border-maroon-200/50 bg-gradient-to-br from-maroon-600 to-maroon-800 p-4 text-cream-50 shadow-soft">
-        <Mandala className="pointer-events-none absolute -right-6 -top-6 size-24 text-gold-300/15" />
-        <p className="relative text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-200">
-          {sampleEvent.type}
-        </p>
-        <p className="relative mt-1 font-serif text-lg font-semibold leading-tight">
-          {sampleEvent.coupleNames}
-        </p>
-        <p className="relative mt-1 text-xs text-cream-100/80">{sampleEvent.dateLabel}</p>
-        <span className="relative mt-3 inline-flex items-center gap-1.5 rounded-full bg-cream-50/15 px-2.5 py-1 text-[11px] font-semibold text-gold-100 backdrop-blur">
-          {sampleEvent.daysAway} days to go
-        </span>
-      </div>
+      {event && (
+        <div className="relative overflow-hidden rounded-2xl border border-maroon-200/50 bg-gradient-to-br from-maroon-600 to-maroon-800 p-4 text-cream-50 shadow-soft">
+          <Mandala className="pointer-events-none absolute -right-6 -top-6 size-24 text-gold-300/15" />
+          <p className="relative text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-200">
+            {event.type}
+          </p>
+          <p className="relative mt-1 font-serif text-lg font-semibold leading-tight">
+            {event.coupleNames}
+          </p>
+          <p className="relative mt-1 text-xs text-cream-100/80">{event.dateLabel}</p>
+          <span className="relative mt-3 inline-flex items-center gap-1.5 rounded-full bg-cream-50/15 px-2.5 py-1 text-[11px] font-semibold text-gold-100 backdrop-blur">
+            {event.daysAway} days to go
+          </span>
+        </div>
+      )}
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
         {dashboardNav.map((item) => (

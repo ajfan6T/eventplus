@@ -19,20 +19,23 @@ import { KasavuDivider, Mandala, Sparkle } from "@/components/decor/motifs";
 import { GradientVisual } from "@/components/visual/gradient-visual";
 import { CategoryCard } from "@/components/categories/category-card";
 import { VendorCard } from "@/components/vendors/vendor-card";
-import { eventCategories } from "@/lib/data/categories";
 import {
   heroStats,
   howItWorks,
   valueProps,
   trustLogos,
 } from "@/lib/data/site";
-import { testimonials } from "@/lib/data/testimonials";
-import { getFeaturedVendors } from "@/lib/data/vendors";
 import { budgetLines, checklistTasks, sampleEvent } from "@/lib/data/planner";
+import { getEventCategories, getFeaturedVendors, getTestimonials } from "@/lib/queries";
 import { formatINR } from "@/lib/utils";
 
-export default function HomePage() {
-  const featured = getFeaturedVendors(6);
+export default async function HomePage() {
+  const [featured, eventCategories, testimonials] = await Promise.all([
+    getFeaturedVendors(6),
+    getEventCategories(),
+    getTestimonials(),
+  ]);
+  // The home "planner preview" is decorative marketing — it keeps the static sample.
   const previewTasks = checklistTasks.slice(5, 9);
   const previewBudget = budgetLines.slice(0, 4);
 

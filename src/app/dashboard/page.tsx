@@ -27,59 +27,8 @@ import { Checklist } from "@/components/dashboard/checklist";
 import { BudgetTracker } from "@/components/dashboard/budget-tracker";
 import { VendorCard } from "@/components/vendors/vendor-card";
 import { KasavuDivider, Sparkle } from "@/components/decor/motifs";
-import { sampleEvent, checklistTasks, budgetLines } from "@/lib/data/planner";
-import { getFeaturedVendors } from "@/lib/data/vendors";
+import { getDemoEvent, getFeaturedVendors } from "@/lib/queries";
 import { formatINR, cn } from "@/lib/utils";
-
-const tasksDone = checklistTasks.filter((t) => t.done).length;
-const tasksTotal = checklistTasks.length;
-const tasksPct = Math.round((tasksDone / tasksTotal) * 100);
-const budgetPct = Math.round((sampleEvent.spent / sampleEvent.totalBudget) * 100);
-const totalAllocated = budgetLines.reduce((s, l) => s + l.allocated, 0);
-
-const stats = [
-  {
-    label: "Budget used",
-    icon: Wallet,
-    value: `${formatINR(sampleEvent.spent, { compact: true })}`,
-    sub: `of ${formatINR(sampleEvent.totalBudget, { compact: true })}`,
-    pct: budgetPct,
-    barClass: "bg-gradient-to-r from-gold-400 to-gold-600",
-    accent: "from-gold-300 to-gold-500 text-maroon-900",
-  },
-  {
-    label: "Tasks done",
-    icon: ListChecks,
-    value: `${tasksDone}`,
-    sub: `of ${tasksTotal} tasks`,
-    pct: tasksPct,
-    barClass: "bg-gradient-to-r from-green-400 to-green-600",
-    accent: "from-green-400 to-green-600 text-cream-50",
-  },
-  {
-    label: "Vendors booked",
-    icon: Store,
-    value: `${sampleEvent.booked}`,
-    sub: `${sampleEvent.shortlisted} shortlisted`,
-    pct: Math.round((sampleEvent.booked / sampleEvent.shortlisted) * 100),
-    barClass: "bg-gradient-to-r from-maroon-400 to-maroon-600",
-    accent: "from-maroon-500 to-maroon-700 text-cream-50",
-  },
-  {
-    label: "Days to go",
-    icon: CalendarClock,
-    value: `${sampleEvent.daysAway}`,
-    sub: sampleEvent.dateLabel,
-    pct: Math.round(((365 - sampleEvent.daysAway) / 365) * 100),
-    barClass: "bg-gradient-to-r from-gold-400 to-gold-600",
-    accent: "from-cream-300 to-cream-400 text-maroon-800",
-  },
-];
-
-const upcoming = checklistTasks
-  .filter((t) => !t.done)
-  .slice(0, 4)
-  .map((t) => ({ title: t.title, due: t.dueLabel, ai: t.aiSuggested }));
 
 const bookings = [
   {
@@ -136,8 +85,69 @@ const messages = [
   },
 ];
 
-export default function DashboardOverviewPage() {
-  const recommended = getFeaturedVendors(3);
+export default async function DashboardOverviewPage() {
+  const [demo, recommended] = await Promise.all([
+    getDemoEvent(),
+    getFeaturedVendors(3),
+  ]);
+
+  const sampleEvent = demo?.event;
+  const checklistTasks = demo?.tasks ?? [];
+  const budgetLines = demo?.budgetLines ?? [];
+
+  const tasksDone = checklistTasks.filter((t) => t.done).length;
+  const tasksTotal = checklistTasks.length;
+  const tasksPct = tasksTotal > 0 ? Math.round((tasksDone / tasksTotal) * 100) : 0;
+  const budgetPct = sampleEvent
+    ? Math.round((sampleEvent.spent / sampleEvent.totalBudget) * 100)
+    : 0;
+  const totalAllocated = budgetLines.reduce((s, l) => s + l.allocated, 0);
+
+  const stats = sampleEvent
+    ? [
+        {
+          label: "Budget used",
+          icon: Wallet,
+          value: `${formatINR(sampleEvent.spent, { compact: true })}`,
+          sub: `of ${formatINR(sampleEvent.totalBudget, { compact: true })}`,
+          pct: budgetPct,
+          barClass: "bg-gradient-to-r from-gold-400 to-gold-600",
+          accent: "from-gold-300 to-gold-500 text-maroon-900",
+        },
+        {
+          label: "Tasks done",
+          icon: ListChecks,
+          value: `${tasksDone}`,
+          sub: `of ${tasksTotal} tasks`,
+          pct: tasksPct,
+          barClass: "bg-gradient-to-r from-green-400 to-green-600",
+          accent: "from-green-400 to-green-600 text-cream-50",
+        },
+        {
+          label: "Vendors booked",
+          icon: Store,
+          value: `${sampleEvent.booked}`,
+          sub: `${sampleEvent.shortlisted} shortlisted`,
+          pct: Math.round((sampleEvent.booked / sampleEvent.shortlisted) * 100),
+          barClass: "bg-gradient-to-r from-maroon-400 to-maroon-600",
+          accent: "from-maroon-500 to-maroon-700 text-cream-50",
+        },
+        {
+          label: "Days to go",
+          icon: CalendarClock,
+          value: `${sampleEvent.daysAway}`,
+          sub: sampleEvent.dateLabel,
+          pct: Math.round(((365 - sampleEvent.daysAway) / 365) * 100),
+          barClass: "bg-gradient-to-r from-gold-400 to-gold-600",
+          accent: "from-cream-300 to-cream-400 text-maroon-800",
+        },
+      ]
+    : [];
+
+  const upcoming = checklistTasks
+    .filter((t) => !t.done)
+    .slice(0, 4)
+    .map((t) => ({ title: t.title, due: t.dueLabel, ai: t.aiSuggested }));
 
   return (
     <div className="flex flex-col gap-12 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -155,21 +165,21 @@ export default function DashboardOverviewPage() {
                   Namaskaram, Anjali 🌸
                 </h1>
                 <p className="mt-1.5 max-w-xl text-cream-100/85">
-                  Your {sampleEvent.type.toLowerCase()} is{" "}
+                  Your {sampleEvent?.type.toLowerCase()} is{" "}
                   <span className="font-semibold text-gold-200">
-                    {sampleEvent.daysAway} days away
+                    {sampleEvent?.daysAway} days away
                   </span>{" "}
                   and you&apos;re {tasksPct}% of the way there. Here&apos;s where everything stands.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-cream-100/80">
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="size-4 text-gold-300" /> {sampleEvent.location}
+                    <MapPin className="size-4 text-gold-300" /> {sampleEvent?.location}
                   </span>
                   <span className="inline-flex items-center gap-1.5">
-                    <Users className="size-4 text-gold-300" /> {sampleEvent.guests} guests
+                    <Users className="size-4 text-gold-300" /> {sampleEvent?.guests} guests
                   </span>
                   <span className="inline-flex items-center gap-1.5">
-                    <CalendarCheck className="size-4 text-gold-300" /> {sampleEvent.dateLabel}
+                    <CalendarCheck className="size-4 text-gold-300" /> {sampleEvent?.dateLabel}
                   </span>
                 </div>
               </div>
@@ -260,7 +270,7 @@ export default function DashboardOverviewPage() {
             <p className="mt-3 text-sm leading-relaxed text-ink-soft">
               Decor is trending{" "}
               <span className="font-semibold text-destructive">
-                {formatINR(budgetLines[3].spent - budgetLines[3].allocated)} over
+                {formatINR((budgetLines[3]?.spent ?? 0) - (budgetLines[3]?.allocated ?? 0))} over
               </span>{" "}
               budget. Your <span className="font-semibold">{formatINR(100000, { compact: true })}</span> buffer can
               absorb it — or trim the floral mandapam package to stay on plan.
@@ -283,7 +293,7 @@ export default function DashboardOverviewPage() {
           description="Every ritual and task, grouped by how far out it is. Tap a row to mark it done."
         />
         <div className="mt-5">
-          <Checklist />
+          <Checklist tasks={checklistTasks} />
         </div>
       </section>
 
@@ -298,7 +308,7 @@ export default function DashboardOverviewPage() {
           })} across ${budgetLines.length} categories — tracked live with overspend alerts.`}
         />
         <div className="mt-5">
-          <BudgetTracker />
+          <BudgetTracker totalBudget={sampleEvent?.totalBudget ?? 0} budgetLines={budgetLines} />
         </div>
       </section>
 
@@ -330,7 +340,7 @@ export default function DashboardOverviewPage() {
           icon={CalendarCheck}
           eyebrow="Locked in"
           title="Bookings & payments"
-          description={`${sampleEvent.booked} vendors confirmed for ${sampleEvent.dateLabel}.`}
+          description={`${sampleEvent?.booked ?? 0} vendors confirmed for ${sampleEvent?.dateLabel ?? ""}.`}
         />
         <div className="mt-5 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card">
           <ul className="flex flex-col">
@@ -437,7 +447,7 @@ export default function DashboardOverviewPage() {
             {
               icon: CalendarCheck,
               title: "Event details",
-              desc: `${sampleEvent.coupleNames} · ${sampleEvent.dateLabel}`,
+              desc: `${sampleEvent?.coupleNames ?? ""} · ${sampleEvent?.dateLabel ?? ""}`,
             },
             {
               icon: Bell,

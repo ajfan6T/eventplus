@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mandala, Sparkle, KasavuDivider } from "@/components/decor/motifs";
 import { CategoryCard } from "@/components/categories/category-card";
-import { eventCategories } from "@/lib/data/categories";
+import { getEventCategories } from "@/lib/queries";
 
 export const metadata: Metadata = {
   title: "Plan any celebration — Events | Eventplus",
@@ -21,7 +21,8 @@ const promises = [
   "Live budget tracking, no planning fee",
 ];
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const eventCategories = await getEventCategories();
   return (
     <>
       {/* ----------------------------------------------------------- Hero */}

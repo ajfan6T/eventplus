@@ -1,7 +1,7 @@
 import { TriangleAlert, Wallet } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Icon } from "@/components/icon";
-import { budgetLines, sampleEvent } from "@/lib/data/planner";
+import type { BudgetLine } from "@/lib/types";
 import { formatINR, cn } from "@/lib/utils";
 
 const statusMeta: Record<
@@ -25,7 +25,13 @@ const statusMeta: Record<
   },
 };
 
-export function BudgetTracker() {
+export function BudgetTracker({
+  totalBudget,
+  budgetLines,
+}: {
+  totalBudget: number;
+  budgetLines: BudgetLine[];
+}) {
   const totalAllocated = budgetLines.reduce((sum, l) => sum + l.allocated, 0);
   const totalSpent = budgetLines.reduce((sum, l) => sum + l.spent, 0);
   const remaining = totalAllocated - totalSpent;
@@ -44,7 +50,7 @@ export function BudgetTracker() {
             <div>
               <h3 className="font-serif text-xl font-semibold text-ink">Budget tracker</h3>
               <p className="text-sm text-muted-foreground">
-                Total budget {formatINR(sampleEvent.totalBudget, { compact: true })} · live across{" "}
+                Total budget {formatINR(totalBudget, { compact: true })} · live across{" "}
                 {budgetLines.length} categories
               </p>
             </div>

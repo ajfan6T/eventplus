@@ -25,7 +25,6 @@ import { Reveal, RevealGroup, RevealItem } from "@/components/motion/reveal";
 import { Sparkle } from "@/components/decor/motifs";
 import { VendorCard } from "@/components/vendors/vendor-card";
 import { vendorCategoryLabels, keralaLocations } from "@/lib/data/categories";
-import { vendors as allVendors } from "@/lib/data/vendors";
 import type { Vendor, VendorCategorySlug } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -61,8 +60,8 @@ function matchesQuery(vendor: Vendor, q: string) {
   return haystack.includes(q.toLowerCase());
 }
 
-export function VendorBrowser({ vendors }: { vendors?: Vendor[] }) {
-  const source = vendors ?? allVendors;
+export function VendorBrowser({ vendors }: { vendors: Vendor[] }) {
+  const source = vendors;
 
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<VendorCategorySlug | typeof ALL>(ALL);

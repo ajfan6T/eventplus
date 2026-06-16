@@ -21,13 +21,13 @@ import { Mandala, Sparkle, KasavuDivider } from "@/components/decor/motifs";
 import { GradientVisual } from "@/components/visual/gradient-visual";
 import { CategoryCard } from "@/components/categories/category-card";
 import { VendorCard } from "@/components/vendors/vendor-card";
+import { vendorCategoryLabels } from "@/lib/data/categories";
 import {
-  eventCategories,
   getEventCategory,
-  vendorCategoryLabels,
-} from "@/lib/data/categories";
-import { getVendorsByEventType } from "@/lib/data/vendors";
-import { testimonials } from "@/lib/data/testimonials";
+  getEventCategories,
+  getVendorsByEventType,
+  getTestimonials,
+} from "@/lib/queries";
 import type { VendorCategorySlug } from "@/lib/types";
 
 /* -------------------------------------------------------------------------- */
@@ -252,8 +252,9 @@ const occasionGuides: Record<string, OccasionGuide> = {
 /* -------------------------------------------------------------------------- */
 /*  Static params + metadata                                                  */
 /* -------------------------------------------------------------------------- */
-export function generateStaticParams() {
-  return eventCategories.map((c) => ({ slug: c.slug }));
+export async function generateStaticParams() {
+  const categories = await getEventCategories();
+  return categories.map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({
@@ -262,7 +263,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const category = getEventCategory(slug);
+  const category = await getEventCategory(slug);
   if (!category) {
     return { title: "Occasion not found | Eventplus" };
   }
@@ -281,20 +282,25 @@ export default async function EventCategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const category = getEventCategory(slug);
+  const category = await getEventCategory(slug);
   if (!category) notFound();
 
   const guide = occasionGuides[category.slug];
-  const recommended = getVendorsByEventType(category.slug).slice(0, 6);
-  const otherCategories = eventCategories.filter((c) => c.slug !== category.slug);
+  const [recommendedAll, allCategories, allTestimonials] = await Promise.all([
+    getVendorsByEventType(category.slug),
+    getEventCategories(),
+    getTestimonials(),
+  ]);
+  const recommended = recommendedAll.slice(0, 6);
+  const otherCategories = allCategories.filter((c) => c.slug !== category.slug);
 
   // Testimonials relevant to this occasion, falling back to a general set.
-  const matched = testimonials.filter((t) =>
+  const matched = allTestimonials.filter((t) =>
     guide?.testimonialMatch.some((m) =>
       t.event.toLowerCase().includes(m.toLowerCase())
     )
   );
-  const occasionTestimonials = (matched.length ? matched : testimonials).slice(0, 3);
+  const occasionTestimonials = (matched.length ? matched : allTestimonials).slice(0, 3);
 
   return (
     <>

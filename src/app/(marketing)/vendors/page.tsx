@@ -5,7 +5,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { Badge } from "@/components/ui/badge";
 import { Mandala, Sparkle } from "@/components/decor/motifs";
 import { VendorBrowser } from "@/components/vendors/vendor-browser";
-import { vendors } from "@/lib/data/vendors";
+import { getVendors } from "@/lib/queries";
 
 export const metadata: Metadata = {
   title: "Browse verified vendors · Eventplus",
@@ -19,7 +19,8 @@ const heroBadges = [
   { icon: MapPin, label: "Across all of Kerala", tone: "text-maroon-600" },
 ];
 
-export default function VendorsPage() {
+export default async function VendorsPage() {
+  const vendors = await getVendors();
   return (
     <>
       {/* ---------------------------------------------------------- Hero */}

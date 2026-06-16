@@ -25,7 +25,7 @@ import {
   SheetDescription,
   SheetClose,
 } from "@/components/ui/sheet";
-import { leads, leadStatusMeta } from "@/lib/data/vendor-dashboard";
+import { leadStatusMeta } from "@/lib/data/vendor-dashboard";
 import type { Lead } from "@/lib/types";
 import { cn, formatINR } from "@/lib/utils";
 
@@ -42,7 +42,7 @@ const filterLabels: Record<FilterKey, string> = {
   lost: leadStatusMeta.lost.label,
 };
 
-export function LeadsBoard() {
+export function LeadsBoard({ leads }: { leads: Lead[] }) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [selected, setSelected] = useState<Lead | null>(null);
 
@@ -53,11 +53,11 @@ export function LeadsBoard() {
       base[key] = leads.filter((l) => l.status === key).length;
     }
     return base;
-  }, []);
+  }, [leads]);
 
   const visible = useMemo(
     () => (filter === "all" ? leads : leads.filter((l) => l.status === filter)),
-    [filter],
+    [filter, leads],
   );
 
   return (

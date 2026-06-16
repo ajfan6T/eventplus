@@ -4,13 +4,15 @@ import {
   VendorSidebar,
   VendorSidebarMobile,
 } from "@/components/vendor/vendor-sidebar";
-import { leads, vendorProfile } from "@/lib/data/vendor-dashboard";
+import { vendorProfile } from "@/lib/data/vendor-dashboard";
+import { getLeads } from "@/lib/queries";
 
-export default function VendorLayout({
+export default async function VendorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const leads = await getLeads();
   const newLeads = leads.filter((l) => l.status === "new").length;
 
   return (

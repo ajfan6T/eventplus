@@ -1,6 +1,5 @@
 import { CalendarDays, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { calendarBookings } from "@/lib/data/vendor-dashboard";
 import type { CalendarBooking } from "@/lib/types";
 import { formatINR } from "@/lib/utils";
 
@@ -22,7 +21,11 @@ function formatDate(iso: string) {
   };
 }
 
-export function CalendarList() {
+export function CalendarList({
+  calendarBookings,
+}: {
+  calendarBookings: CalendarBooking[];
+}) {
   const sorted = [...calendarBookings].sort(
     (a, b) => +new Date(a.date) - +new Date(b.date),
   );

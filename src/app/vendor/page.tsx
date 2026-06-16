@@ -25,11 +25,8 @@ import { Sparkle } from "@/components/decor/motifs";
 import { LeadsBoard } from "@/components/vendor/leads-board";
 import { CalendarList } from "@/components/vendor/calendar-list";
 import { EarningsChart } from "@/components/vendor/earnings-chart";
-import {
-  vendorProfile,
-  vendorStats,
-  leads,
-} from "@/lib/data/vendor-dashboard";
+import { vendorProfile, vendorStats } from "@/lib/data/vendor-dashboard";
+import { getLeads, getCalendarBookings } from "@/lib/queries";
 import { getVendor } from "@/lib/data/vendors";
 import { cn } from "@/lib/utils";
 
@@ -67,7 +64,11 @@ const toneStyles: Record<string, { icon: string; ring: string; value: string }> 
 /** A scroll-margin offset so anchor jumps clear the sticky top bar. */
 const anchorOffset = "scroll-mt-24";
 
-export default function VendorDashboardPage() {
+export default async function VendorDashboardPage() {
+  const [leads, calendarBookings] = await Promise.all([
+    getLeads(),
+    getCalendarBookings(),
+  ]);
   const newLeadCount = leads.filter((l) => l.status === "new").length;
   const publicVendor = getVendor("marigold-decor-studio");
   const reviews = publicVendor?.reviews.slice(0, 2) ?? [];
@@ -165,7 +166,7 @@ export default function VendorDashboardPage() {
             </div>
           </Reveal>
           <Reveal delay={0.05} className="mt-6">
-            <LeadsBoard />
+            <LeadsBoard leads={leads} />
           </Reveal>
         </section>
 
@@ -184,7 +185,7 @@ export default function VendorDashboardPage() {
               </div>
             </Reveal>
             <Reveal delay={0.05}>
-              <CalendarList />
+              <CalendarList calendarBookings={calendarBookings} />
             </Reveal>
           </section>
 

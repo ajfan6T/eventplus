@@ -44,6 +44,8 @@ realistic mock data. The backend (auth, database, payments, real lead routing) l
 | Animation    | **framer-motion**                                             |
 | Icons        | **lucide-react** (+ inline SVG for brand/social glyphs)       |
 | Fonts        | **Fraunces** (serif display) + **Inter** (sans), via `<link>` |
+| Database     | **Prisma 7** + SQLite (dev) → Postgres-ready, libSQL driver adapter |
+| Data access  | Server-only query layer (`src/lib/queries.ts`)                |
 
 ## 🎨 Design — "Festive Kerala Premium"
 
@@ -59,16 +61,23 @@ All design tokens live in [`src/app/globals.css`](src/app/globals.css).
 ## 🚀 Getting started
 
 ```bash
-npm install
+npm install                 # also runs `prisma generate` (postinstall)
+cp .env.example .env        # set DATABASE_URL (SQLite by default)
+npm run db:deploy           # apply migrations → creates dev.db
+npm run db:seed             # load the catalog + demo data
 npm run dev
 ```
 
 Open the printed local URL (default [http://localhost:3000](http://localhost:3000)).
 
 ```bash
-npm run build   # production build (Turbopack)
-npm start       # serve the production build
-npx tsc --noEmit  # type-check
+npm run build      # production build (Turbopack); SSG queries the DB
+npm start          # serve the production build
+npx tsc --noEmit   # type-check
+
+npm run db:seed    # re-seed from the mock data in src/lib/data
+npm run db:reset   # drop, re-migrate and re-seed
+npm run db:studio  # open Prisma Studio
 ```
 
 ## 🗂️ Project structure
@@ -101,23 +110,36 @@ src/
 └── lib/
     ├── types.ts                # domain types
     ├── utils.ts                # cn(), formatINR(), slugify()
-    └── data/                   # mock data: vendors, categories, planner, corporate, …
+    ├── db.ts                   # Prisma client singleton (libSQL adapter)
+    ├── queries.ts              # server-only data-access layer → domain types
+    └── data/                   # static config + seed source (vendors, categories, …)
+prisma/
+├── schema.prisma              # catalog + planning + CRM models
+├── migrations/                # committed migration history
+└── seed.ts                    # migrates src/lib/data into the database
 ```
 
-## 📍 Scope notes (Phase One)
+## 📍 Scope notes
 
-- **Mock data only.** All vendors, leads, budgets and bookings are seeded in `src/lib/data`.
-- **Auth is mocked.** Login/signup route to the relevant dashboard without real authentication.
+- **Database-backed (Phase Two, Round 1).** Vendors, categories, reviews, testimonials and the
+  demo planning event / vendor CRM data now live in the database; pages read them through the
+  query layer. `src/lib/data` remains the **seed source** and holds static config (locations,
+  labels, copy, planner option lists).
+- **Auth is mocked.** Login/signup route to the relevant dashboard without real authentication
+  (Auth.js + roles is the next round).
 - **Corporate inquiries** show a success state and build a `mailto:` to the founder address
   (`src/lib/data/site.ts → site.founderEmail`); real routing comes with the backend.
 - **Kerala first** — content and vendors target Kochi, Trivandrum, Kozhikode, Thrissur and beyond.
 
-## 🛣️ Phase Two (planned)
+## 🛣️ Phase Two roadmap
 
-- Backend & database, real authentication and roles
-- Live vendor onboarding, messaging and booking/payments
-- Real corporate-inquiry routing & notifications
-- Search/recommendations powered by the AI planner intake
+- ✅ **Round 1 — Database foundation:** Prisma schema, migrations, seed from mock data, and a
+  server-side query layer; catalog + dashboard reads now hit the DB.
+- ⏭️ **Round 2 — Auth & roles:** Auth.js (email/password + Google), `family` / `vendor` / `admin`
+  roles, protected dashboards scoped to the signed-in user.
+- ⏭️ Live booking & lead flows persisted (booking requests → vendor leads; corporate inquiries).
+- ⏭️ Email routing (Resend) and payments (Razorpay, INR).
+- ⏭️ Search/recommendations powered by the AI planner intake.
 
 ---
 

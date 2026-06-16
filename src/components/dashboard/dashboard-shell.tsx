@@ -12,7 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
-import { sampleEvent } from "@/lib/data/planner";
+import type { DemoEvent } from "@/lib/queries";
 
 /** Sections on the overview page that the sidebar + topbar track. */
 const SCROLL_SPY_IDS = [
@@ -35,7 +35,13 @@ const TITLES: Record<string, string> = {
   settings: "Settings",
 };
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function DashboardShell({
+  children,
+  event,
+}: {
+  children: React.ReactNode;
+  event?: DemoEvent;
+}) {
   const [activeAnchor, setActiveAnchor] = useState("overview");
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -63,7 +69,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen lg:grid lg:grid-cols-[16rem_1fr]">
       {/* ---- Fixed desktop sidebar ---- */}
       <aside className="sticky top-0 hidden h-screen border-r border-border/70 bg-cream-50 lg:block">
-        <DashboardSidebar activeAnchor={activeAnchor} />
+        <DashboardSidebar activeAnchor={activeAnchor} event={event} />
       </aside>
 
       {/* ---- Main column ---- */}
@@ -84,6 +90,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   <DashboardSidebar
                     activeAnchor={activeAnchor}
                     onNavigate={() => setMobileOpen(false)}
+                    event={event}
                   />
                 </SheetContent>
               </Sheet>
@@ -98,19 +105,21 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <div className="hidden min-w-0 flex-1 items-center gap-3 lg:flex">
               <div className="min-w-0">
                 <p className="truncate font-serif text-base font-semibold leading-tight text-ink">
-                  {sampleEvent.coupleNames}
+                  {event?.coupleNames}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {TITLES[activeAnchor] ?? "Overview"} · {sampleEvent.type} ·{" "}
-                  {sampleEvent.dateLabel}
+                  {TITLES[activeAnchor] ?? "Overview"}
+                  {event ? ` · ${event.type} · ${event.dateLabel}` : ""}
                 </p>
               </div>
             </div>
 
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
-              <span className="hidden items-center gap-1.5 rounded-full border border-gold-300 bg-gold-50 px-3 py-1.5 text-xs font-semibold text-gold-800 sm:inline-flex">
-                <Sparkles className="size-3.5" /> {sampleEvent.daysAway} days to go
-              </span>
+              {event && (
+                <span className="hidden items-center gap-1.5 rounded-full border border-gold-300 bg-gold-50 px-3 py-1.5 text-xs font-semibold text-gold-800 sm:inline-flex">
+                  <Sparkles className="size-3.5" /> {event.daysAway} days to go
+                </span>
+              )}
               <button
                 type="button"
                 aria-label="Notifications"

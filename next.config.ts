@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: "/Users/majfan/eventplus",
   },
+  // Keep Prisma + the libSQL native driver out of the bundler; require them at
+  // runtime from node_modules (native addons can't be bundled).
+  serverExternalPackages: [
+    "@prisma/client",
+    "@prisma/adapter-libsql",
+    "@libsql/client",
+    "libsql",
+  ],
 };
 
 export default nextConfig;

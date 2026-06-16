@@ -5,7 +5,7 @@ import { Check, Sparkles, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Icon } from "@/components/icon";
-import { checklistTasks } from "@/lib/data/planner";
+import type { ChecklistTask } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /** Map each task's category to a lucide icon name resolvable by <Icon />. */
@@ -23,27 +23,27 @@ const categoryIcon: Record<string, string> = {
   planning: "CalendarCheck",
 };
 
-export function Checklist() {
+export function Checklist({ tasks }: { tasks: ChecklistTask[] }) {
   // Seed local "done" state from the data; toggling is purely client-side.
   const [done, setDone] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(checklistTasks.map((t) => [t.id, t.done]))
+    Object.fromEntries(tasks.map((t) => [t.id, t.done]))
   );
 
   const toggle = (id: string) =>
     setDone((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const completed = useMemo(
-    () => checklistTasks.filter((t) => done[t.id]).length,
-    [done]
+    () => tasks.filter((t) => done[t.id]).length,
+    [done, tasks]
   );
-  const total = checklistTasks.length;
-  const pct = Math.round((completed / total) * 100);
+  const total = tasks.length;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   // Preserve the phase order as authored in the data.
   const phases = useMemo(() => {
     const order: string[] = [];
-    const grouped: Record<string, typeof checklistTasks> = {};
-    for (const task of checklistTasks) {
+    const grouped: Record<string, ChecklistTask[]> = {};
+    for (const task of tasks) {
       if (!grouped[task.phase]) {
         grouped[task.phase] = [];
         order.push(task.phase);
@@ -51,7 +51,7 @@ export function Checklist() {
       grouped[task.phase].push(task);
     }
     return order.map((phase) => ({ phase, tasks: grouped[phase] }));
-  }, []);
+  }, [tasks]);
 
   return (
     <div className="rounded-2xl border border-border/70 bg-card shadow-card">

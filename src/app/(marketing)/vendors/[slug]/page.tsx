@@ -24,11 +24,12 @@ import { GradientVisual } from "@/components/visual/gradient-visual";
 import { Mandala, KasavuDivider, Sparkle } from "@/components/decor/motifs";
 import { VendorCard } from "@/components/vendors/vendor-card";
 import { BookingPanel } from "@/components/vendors/booking-panel";
-import { vendors, getVendor, getRelatedVendors } from "@/lib/data/vendors";
+import { getVendor, getRelatedVendors, getVendorSlugs } from "@/lib/queries";
 import { formatINR } from "@/lib/utils";
 
 export async function generateStaticParams() {
-  return vendors.map((v) => ({ slug: v.slug }));
+  const slugs = await getVendorSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -37,7 +38,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const vendor = getVendor(slug);
+  const vendor = await getVendor(slug);
 
   if (!vendor) {
     return {
@@ -63,11 +64,11 @@ export default async function VendorDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const vendor = getVendor(slug);
+  const vendor = await getVendor(slug);
 
   if (!vendor) notFound();
 
-  const related = getRelatedVendors(slug, 3);
+  const related = await getRelatedVendors(slug, 3);
   const galleryTiles = vendor.gallerySeeds.slice(0, 6);
 
   const stats = [

@@ -1,0 +1,173 @@
+// Eventplus — Phase Two database schema.
+// Dev: SQLite. Production target: Postgres (change datasource provider + DATABASE_URL).
+// Array/tuple fields use Json (SQLite has no native scalar lists).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ---------------------------------------------------------------- Catalog
+
+model EventCategory {
+  id            String @id @default(cuid())
+  slug          String @unique
+  name          String
+  tagline       String
+  description   String
+  gradient      Json // [from, via, to]
+  icon          String
+  popularBudget String
+  avgGuests     String
+  vendorTypes   Json // VendorCategorySlug[]
+  order         Int    @default(0)
+}
+
+model Vendor {
+  id            String  @id @default(cuid())
+  slug          String  @unique
+  name          String
+  category      String
+  categoryLabel String
+  tagline       String
+  about         String
+  city          String
+  district      String
+  rating        Float
+  reviewCount   Int
+  startingPrice Int
+  priceUnit     String
+  verified      Boolean @default(true)
+  responseTime  String
+  bookings      Int
+  yearsActive   Int
+  gradient      Json // [from, via, to]
+  services      Json // string[]
+  highlights    Json // string[]
+  serviceAreas  Json // string[]
+  gallerySeeds  Json // number[]
+  eventTypes    Json // EventCategorySlug[]
+  order         Int     @default(0)
+
+  packages VendorPackage[]
+  reviews  VendorReview[]
+  leads    Lead[]
+
+  createdAt DateTime @default(now())
+}
+
+model VendorPackage {
+  id       String  @id @default(cuid())
+  vendorId String
+  vendor   Vendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  name     String
+  price    Int
+  unit     String?
+  popular  Boolean @default(false)
+  features Json // string[]
+  order    Int     @default(0)
+}
+
+model VendorReview {
+  id        String   @id @default(cuid())
+  vendorId  String
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  author    String
+  location  String
+  rating    Float
+  event     String
+  date      String
+  body      String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Testimonial {
+  id       String @id @default(cuid())
+  name     String
+  role     String
+  location String
+  rating   Float
+  quote    String
+  event    String
+  initials String
+  order    Int    @default(0)
+}
+
+// ------------------------------------------------ Planning (demo, pre-auth)
+
+model Event {
+  id          String  @id @default(cuid())
+  type        String
+  coupleNames String
+  date        String
+  dateLabel   String
+  daysAway    Int
+  location    String
+  guests      Int
+  totalBudget Int
+  spent       Int
+  booked      Int
+  shortlisted Int
+  isDemo      Boolean @default(true)
+
+  tasks       ChecklistTask[]
+  budgetLines BudgetLine[]
+}
+
+model ChecklistTask {
+  id          String  @id @default(cuid())
+  eventId     String
+  event       Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  taskKey     String
+  title       String
+  phase       String
+  done        Boolean @default(false)
+  dueLabel    String
+  category    String
+  aiSuggested Boolean @default(false)
+  order       Int     @default(0)
+}
+
+model BudgetLine {
+  id        String @id @default(cuid())
+  eventId   String
+  event     Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  category  String
+  icon      String
+  allocated Int
+  spent     Int
+  status    String
+  order     Int    @default(0)
+}
+
+// ------------------------------------------------ Vendor CRM (demo, pre-auth)
+
+model Lead {
+  id         String   @id @default(cuid())
+  leadKey    String   @unique
+  vendorId   String?
+  vendor     Vendor?  @relation(fields: [vendorId], references: [id])
+  customer   String
+  event      String
+  date       String
+  location   String
+  budget     Int
+  status     String
+  message    String
+  receivedAt String
+  createdAt  DateTime @default(now())
+}
+
+model CalendarBooking {
+  id         String @id @default(cuid())
+  bookingKey String @unique
+  title      String
+  date       String
+  type       String
+  value      Int
+}
