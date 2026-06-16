@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { getDemoEvent } from "@/lib/queries";
+import { getActiveEvent } from "@/lib/queries";
 
 export const metadata: Metadata = {
   title: "Your dashboard",
@@ -13,7 +15,15 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const demo = await getDemoEvent();
+  const session = await auth();
+  if (!session?.user) redirect("/login?callbackUrl=/dashboard");
+  if (session.user.role === "vendor") redirect("/vendor");
 
-  return <DashboardShell event={demo?.event}>{children}</DashboardShell>;
+  const bundle = await getActiveEvent(session.user.id);
+
+  return (
+    <DashboardShell event={bundle?.event} user={session.user}>
+      {children}
+    </DashboardShell>
+  );
 }

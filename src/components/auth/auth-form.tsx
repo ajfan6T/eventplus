@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Sparkle } from "@/components/decor/motifs";
 import { keralaLocations } from "@/lib/data/categories";
+import { registerUser } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
 
 type Mode = "login" | "signup";
@@ -56,29 +58,71 @@ function GoogleGlyph({ className }: { className?: string }) {
   );
 }
 
-export function AuthForm({ mode }: { mode: Mode }) {
+export function AuthForm({
+  mode,
+  googleEnabled = false,
+}: {
+  mode: Mode;
+  googleEnabled?: boolean;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isLogin = mode === "login";
+  const callbackUrl = searchParams.get("callbackUrl");
 
   const [role, setRole] = useState<Role>(
     searchParams.get("role") === "vendor" ? "vendor" : "family"
   );
   const [submitting, setSubmitting] = useState(false);
   const [city, setCity] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (submitting) return;
+    setError(null);
     setSubmitting(true);
-    // Mock auth — give the spinner a beat, then route.
-    setTimeout(() => {
-      if (isLogin) {
-        router.push("/dashboard");
-      } else {
-        router.push(role === "vendor" ? "/vendor" : "/dashboard");
+
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") ?? "").trim();
+    const password = String(fd.get("password") ?? "");
+    const name = String(fd.get("name") ?? "").trim();
+
+    try {
+      if (!isLogin) {
+        const reg = await registerUser({ name, email, password, role, city });
+        if (!reg.ok) {
+          setError(reg.error ?? "Could not create your account.");
+          setSubmitting(false);
+          return;
+        }
       }
-    }, 650);
+
+      const res = await signIn("credentials", { email, password, redirect: false });
+      if (res?.error) {
+        setError(
+          isLogin
+            ? "Incorrect email or password."
+            : "Account created, but sign-in failed. Try logging in."
+        );
+        setSubmitting(false);
+        return;
+      }
+
+      const dest =
+        callbackUrl ?? (!isLogin && role === "vendor" ? "/vendor" : "/dashboard");
+      router.push(dest);
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setSubmitting(false);
+    }
+  }
+
+  function handleGoogle() {
+    signIn("google", {
+      callbackUrl: callbackUrl ?? (role === "vendor" ? "/vendor" : "/dashboard"),
+    });
   }
 
   return (
@@ -186,6 +230,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             </span>
             <Input
               id="password"
+              name="password"
               type="password"
               required
               placeholder={isLogin ? "Enter your password" : "Create a password"}
@@ -217,6 +262,16 @@ export function AuthForm({ mode }: { mode: Mode }) {
               </SelectContent>
             </Select>
           </div>
+        )}
+
+        {/* --------------------------------------------------------- Error */}
+        {error && (
+          <p
+            role="alert"
+            className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive"
+          >
+            {error}
+          </p>
         )}
 
         {/* ------------------------------------------------------ Submit button */}
@@ -255,25 +310,27 @@ export function AuthForm({ mode }: { mode: Mode }) {
         )}
       </form>
 
-      {/* --------------------------------------------------------- Divider */}
-      <div className="flex items-center gap-4">
-        <span className="h-px flex-1 bg-border" />
-        <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          or
-        </span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-
-      {/* ------------------------------------------------- Social / mock buttons */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Button variant="outline" type="button" className="w-full">
-          <GoogleGlyph className="size-4" />
-          {isLogin ? "Sign in with Google" : "Sign up with Google"}
-        </Button>
-        <Button variant="outline" type="button" className="w-full">
-          <Phone className="size-4" /> Continue with phone
-        </Button>
-      </div>
+      {/* --------------------------------------------------- Social (Google) */}
+      {googleEnabled && (
+        <>
+          <div className="flex items-center gap-4">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              or
+            </span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <Button
+            variant="outline"
+            type="button"
+            onClick={handleGoogle}
+            className="w-full"
+          >
+            <GoogleGlyph className="size-4" />
+            {isLogin ? "Sign in with Google" : "Sign up with Google"}
+          </Button>
+        </>
+      )}
 
       {/* ----------------------------------------------------------- Footer link */}
       <p className="text-center text-sm text-muted-foreground">
@@ -324,7 +381,7 @@ function Field({
         <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
           {icon}
         </span>
-        <Input id={id} required className="pl-10" {...props} />
+        <Input id={id} name={id} required className="pl-10" {...props} />
       </div>
     </div>
   );

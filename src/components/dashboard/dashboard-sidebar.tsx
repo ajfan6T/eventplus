@@ -11,13 +11,35 @@ import {
   MessageCircle,
   Settings,
   ArrowUpRight,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Mandala } from "@/components/decor/motifs";
 import type { DemoEvent } from "@/lib/queries";
+import { signOutAction } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
+
+type SidebarUser = { name?: string | null; email?: string | null; role?: string };
+
+const roleLabel: Record<string, string> = {
+  family: "Family plan",
+  vendor: "Vendor",
+  admin: "Admin",
+};
+
+function initialsOf(user?: SidebarUser) {
+  const source = user?.name ?? user?.email ?? "Guest";
+  return (
+    source
+      .split(/[\s@.]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((s) => s[0]?.toUpperCase())
+      .join("") || "U"
+  );
+}
 
 type NavItem = {
   label: string;
@@ -98,12 +120,16 @@ export function DashboardSidebar({
   onNavigate,
   className,
   event,
+  user,
 }: {
   activeAnchor: string;
   onNavigate?: () => void;
   className?: string;
   event?: DemoEvent;
+  user?: SidebarUser;
 }) {
+  const displayName = user?.name ?? user?.email ?? "Guest";
+  const subLabel = roleLabel[user?.role ?? "family"] ?? "Family plan";
   return (
     <div className={cn("flex h-full flex-col gap-6 px-4 py-6", className)}>
       <div className="px-2">
@@ -141,20 +167,23 @@ export function DashboardSidebar({
       {/* User block */}
       <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-cream-50 p-3 shadow-soft">
         <Avatar className="size-10 border-maroon-200">
-          <AvatarFallback className="bg-maroon-100 text-maroon-700">AV</AvatarFallback>
+          <AvatarFallback className="bg-maroon-100 text-maroon-700">
+            {initialsOf(user)}
+          </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-ink">Anjali Varma</p>
-          <p className="truncate text-xs text-muted-foreground">Family plan · Kochi</p>
+          <p className="truncate text-sm font-semibold text-ink">{displayName}</p>
+          <p className="truncate text-xs text-muted-foreground">{subLabel}</p>
         </div>
-        <Link
-          href="/dashboard#settings"
-          onClick={onNavigate}
-          aria-label="Account settings"
-          className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-cream-200 hover:text-ink"
-        >
-          <Settings className="size-4" />
-        </Link>
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            aria-label="Sign out"
+            className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-maroon-50 hover:text-maroon-700"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </form>
       </div>
     </div>
   );

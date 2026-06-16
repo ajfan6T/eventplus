@@ -1,18 +1,24 @@
+import { redirect } from "next/navigation";
 import { Bell } from "lucide-react";
+import { auth } from "@/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   VendorSidebar,
   VendorSidebarMobile,
 } from "@/components/vendor/vendor-sidebar";
 import { vendorProfile } from "@/lib/data/vendor-dashboard";
-import { getLeads } from "@/lib/queries";
+import { getLeads, getLeadsForUser } from "@/lib/queries";
 
 export default async function VendorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const leads = await getLeads();
+  const session = await auth();
+  if (!session?.user) redirect("/login?callbackUrl=/vendor");
+  if (session.user.role === "family") redirect("/dashboard");
+
+  const leads = (await getLeadsForUser(session.user.id)) ?? (await getLeads());
   const newLeads = leads.filter((l) => l.status === "new").length;
 
   return (

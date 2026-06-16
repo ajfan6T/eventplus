@@ -27,7 +27,8 @@ import { Checklist } from "@/components/dashboard/checklist";
 import { BudgetTracker } from "@/components/dashboard/budget-tracker";
 import { VendorCard } from "@/components/vendors/vendor-card";
 import { KasavuDivider, Sparkle } from "@/components/decor/motifs";
-import { getDemoEvent, getFeaturedVendors } from "@/lib/queries";
+import { auth } from "@/auth";
+import { getActiveEvent, getDemoEvent, getFeaturedVendors } from "@/lib/queries";
 import { formatINR, cn } from "@/lib/utils";
 
 const bookings = [
@@ -86,8 +87,9 @@ const messages = [
 ];
 
 export default async function DashboardOverviewPage() {
+  const session = await auth();
   const [demo, recommended] = await Promise.all([
-    getDemoEvent(),
+    session?.user?.id ? getActiveEvent(session.user.id) : getDemoEvent(),
     getFeaturedVendors(3),
   ]);
 

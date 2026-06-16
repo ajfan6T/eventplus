@@ -11,6 +11,23 @@ datasource db {
   provider = "sqlite"
 }
 
+// ------------------------------------------------------------------- Auth
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String? // null for OAuth-only accounts
+  role          String    @default("family") // family | vendor | admin
+  city          String?
+  createdAt     DateTime  @default(now())
+
+  events Event[]
+  vendor Vendor? // a vendor account owns one Vendor profile
+}
+
 // ---------------------------------------------------------------- Catalog
 
 model EventCategory {
@@ -52,6 +69,9 @@ model Vendor {
   gallerySeeds  Json // number[]
   eventTypes    Json // EventCategorySlug[]
   order         Int     @default(0)
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
 
   packages VendorPackage[]
   reviews  VendorReview[]
@@ -114,6 +134,9 @@ model Event {
   booked      Int
   shortlisted Int
   isDemo      Boolean @default(true)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 
   tasks       ChecklistTask[]
   budgetLines BudgetLine[]

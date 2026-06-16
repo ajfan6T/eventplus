@@ -1,4 +1,5 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { eventCategories } from "../src/lib/data/categories";
@@ -22,6 +23,19 @@ async function main() {
   await prisma.vendor.deleteMany();
   await prisma.eventCategory.deleteMany();
   await prisma.testimonial.deleteMany();
+  await prisma.user.deleteMany();
+
+  console.log("Seeding demo users (family / vendor / admin @eventplus.in · password: password123)…");
+  const demoPassword = await bcrypt.hash("password123", 10);
+  const familyUser = await prisma.user.create({
+    data: { name: "Anjali Varma", email: "family@eventplus.in", passwordHash: demoPassword, role: "family", city: "Kochi" },
+  });
+  const vendorUser = await prisma.user.create({
+    data: { name: "Marigold Decor Studio", email: "vendor@eventplus.in", passwordHash: demoPassword, role: "vendor", city: "Thrissur" },
+  });
+  await prisma.user.create({
+    data: { name: "Eventplus Admin", email: "admin@eventplus.in", passwordHash: demoPassword, role: "admin" },
+  });
 
   console.log(`Seeding ${eventCategories.length} event categories…`);
   for (const [i, c] of eventCategories.entries()) {
@@ -124,6 +138,7 @@ async function main() {
       booked: sampleEvent.booked,
       shortlisted: sampleEvent.shortlisted,
       isDemo: true,
+      userId: familyUser.id,
       tasks: {
         create: checklistTasks.map((t, j) => ({
           taskKey: t.id,
@@ -149,11 +164,17 @@ async function main() {
     },
   });
 
-  // Link the demo CRM leads to the real Marigold Decor Studio vendor.
+  // Link the demo CRM leads + the vendor account to Marigold Decor Studio.
   const marigold = await prisma.vendor.findUnique({
     where: { slug: "marigold-decor-studio" },
     select: { id: true },
   });
+  if (marigold) {
+    await prisma.vendor.update({
+      where: { id: marigold.id },
+      data: { userId: vendorUser.id },
+    });
+  }
 
   console.log(`Seeding ${leads.length} vendor leads…`);
   for (const l of leads) {

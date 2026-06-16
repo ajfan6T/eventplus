@@ -13,10 +13,12 @@ import {
   Settings,
   ExternalLink,
   Menu,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Rating } from "@/components/ui/rating";
+import { signOutAction } from "@/lib/actions/auth";
 import {
   Sheet,
   SheetContent,
@@ -111,12 +113,21 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-maroon-600 to-maroon-800 font-serif text-base font-semibold text-cream-50 shadow-soft">
           MD
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate font-serif text-sm font-semibold text-ink">
             {vendorProfile.name}
           </p>
           <Rating value={vendorProfile.rating} className="mt-0.5" />
         </div>
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            aria-label="Sign out"
+            className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-maroon-50 hover:text-maroon-700"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </form>
       </div>
     </div>
   );

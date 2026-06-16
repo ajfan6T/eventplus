@@ -46,6 +46,7 @@ realistic mock data. The backend (auth, database, payments, real lead routing) l
 | Fonts        | **Fraunces** (serif display) + **Inter** (sans), via `<link>` |
 | Database     | **Prisma 7** + SQLite (dev) → Postgres-ready, libSQL driver adapter |
 | Data access  | Server-only query layer (`src/lib/queries.ts`)                |
+| Auth         | **Auth.js v5** (NextAuth) — credentials + optional Google, JWT sessions, roles |
 
 ## 🎨 Design — "Festive Kerala Premium"
 
@@ -62,11 +63,29 @@ All design tokens live in [`src/app/globals.css`](src/app/globals.css).
 
 ```bash
 npm install                 # also runs `prisma generate` (postinstall)
-cp .env.example .env        # set DATABASE_URL (SQLite by default)
+cp .env.example .env        # set DATABASE_URL + AUTH_SECRET (see below)
 npm run db:deploy           # apply migrations → creates dev.db
-npm run db:seed             # load the catalog + demo data
+npm run db:seed             # load the catalog + demo data + demo accounts
 npm run dev
 ```
+
+Generate an `AUTH_SECRET` for `.env`:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(33).toString('base64'))"
+```
+
+### Demo accounts (seeded)
+
+All use the password **`password123`**:
+
+| Email | Role | Lands on |
+| --- | --- | --- |
+| `family@eventplus.in` | family | `/dashboard` (owns the demo wedding) |
+| `vendor@eventplus.in` | vendor | `/vendor` (Marigold Decor Studio's leads) |
+| `admin@eventplus.in` | admin | either dashboard |
+
+Google sign-in appears only when `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` are set.
 
 Open the printed local URL (default [http://localhost:3000](http://localhost:3000)).
 
@@ -125,8 +144,10 @@ prisma/
   demo planning event / vendor CRM data now live in the database; pages read them through the
   query layer. `src/lib/data` remains the **seed source** and holds static config (locations,
   labels, copy, planner option lists).
-- **Auth is mocked.** Login/signup route to the relevant dashboard without real authentication
-  (Auth.js + roles is the next round).
+- **Real authentication (Phase Two, Round 2).** Auth.js v5 with email/password (and optional
+  Google), `family` / `vendor` / `admin` roles, JWT sessions. `/dashboard` and `/vendor` are
+  protected and role-routed; each loads the signed-in user's own data (with a graceful demo
+  fallback for brand-new accounts).
 - **Corporate inquiries** show a success state and build a `mailto:` to the founder address
   (`src/lib/data/site.ts → site.founderEmail`); real routing comes with the backend.
 - **Kerala first** — content and vendors target Kochi, Trivandrum, Kozhikode, Thrissur and beyond.
@@ -135,8 +156,8 @@ prisma/
 
 - ✅ **Round 1 — Database foundation:** Prisma schema, migrations, seed from mock data, and a
   server-side query layer; catalog + dashboard reads now hit the DB.
-- ⏭️ **Round 2 — Auth & roles:** Auth.js (email/password + Google), `family` / `vendor` / `admin`
-  roles, protected dashboards scoped to the signed-in user.
+- ✅ **Round 2 — Auth & roles:** Auth.js (email/password + optional Google), `family` / `vendor`
+  / `admin` roles, protected + role-routed dashboards scoped to the signed-in user.
 - ⏭️ Live booking & lead flows persisted (booking requests → vendor leads; corporate inquiries).
 - ⏭️ Email routing (Resend) and payments (Razorpay, INR).
 - ⏭️ Search/recommendations powered by the AI planner intake.

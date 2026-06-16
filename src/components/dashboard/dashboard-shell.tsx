@@ -35,15 +35,34 @@ const TITLES: Record<string, string> = {
   settings: "Settings",
 };
 
+export type DashboardUser = {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
+
+function initialsOf(user?: DashboardUser) {
+  const source = user?.name ?? user?.email ?? "Guest";
+  return source
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase())
+    .join("");
+}
+
 export function DashboardShell({
   children,
   event,
+  user,
 }: {
   children: React.ReactNode;
   event?: DemoEvent;
+  user?: DashboardUser;
 }) {
   const [activeAnchor, setActiveAnchor] = useState("overview");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const initials = initialsOf(user);
 
   // Scroll-spy: highlight the nav item for the section currently in view.
   useEffect(() => {
@@ -69,7 +88,7 @@ export function DashboardShell({
     <div className="min-h-screen lg:grid lg:grid-cols-[16rem_1fr]">
       {/* ---- Fixed desktop sidebar ---- */}
       <aside className="sticky top-0 hidden h-screen border-r border-border/70 bg-cream-50 lg:block">
-        <DashboardSidebar activeAnchor={activeAnchor} event={event} />
+        <DashboardSidebar activeAnchor={activeAnchor} event={event} user={user} />
       </aside>
 
       {/* ---- Main column ---- */}
@@ -91,6 +110,7 @@ export function DashboardShell({
                     activeAnchor={activeAnchor}
                     onNavigate={() => setMobileOpen(false)}
                     event={event}
+                    user={user}
                   />
                 </SheetContent>
               </Sheet>
@@ -130,7 +150,7 @@ export function DashboardShell({
               </button>
               <Avatar className="size-9 border-maroon-200">
                 <AvatarFallback className="bg-maroon-100 text-sm text-maroon-700">
-                  AV
+                  {initials || "U"}
                 </AvatarFallback>
               </Avatar>
             </div>

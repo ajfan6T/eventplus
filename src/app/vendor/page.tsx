@@ -26,7 +26,8 @@ import { LeadsBoard } from "@/components/vendor/leads-board";
 import { CalendarList } from "@/components/vendor/calendar-list";
 import { EarningsChart } from "@/components/vendor/earnings-chart";
 import { vendorProfile, vendorStats } from "@/lib/data/vendor-dashboard";
-import { getLeads, getCalendarBookings } from "@/lib/queries";
+import { auth } from "@/auth";
+import { getLeads, getLeadsForUser, getCalendarBookings } from "@/lib/queries";
 import { getVendor } from "@/lib/data/vendors";
 import { cn } from "@/lib/utils";
 
@@ -65,10 +66,11 @@ const toneStyles: Record<string, { icon: string; ring: string; value: string }> 
 const anchorOffset = "scroll-mt-24";
 
 export default async function VendorDashboardPage() {
-  const [leads, calendarBookings] = await Promise.all([
-    getLeads(),
-    getCalendarBookings(),
-  ]);
+  const session = await auth();
+  const calendarBookings = await getCalendarBookings();
+  const leads =
+    (session?.user?.id ? await getLeadsForUser(session.user.id) : null) ??
+    (await getLeads());
   const newLeadCount = leads.filter((l) => l.status === "new").length;
   const publicVendor = getVendor("marigold-decor-studio");
   const reviews = publicVendor?.reviews.slice(0, 2) ?? [];

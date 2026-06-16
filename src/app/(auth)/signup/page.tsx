@@ -9,9 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function SignupPage() {
+  const googleEnabled = Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
   return (
     <Suspense fallback={<AuthFormFallback />}>
-      <AuthForm mode="signup" />
+      <AuthForm mode="signup" googleEnabled={googleEnabled} />
     </Suspense>
   );
 }

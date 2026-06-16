@@ -180,67 +180,103 @@ export interface DemoEvent {
   shortlisted: number;
 }
 
-export async function getDemoEvent(): Promise<{
+export interface EventBundle {
   event: DemoEvent;
   tasks: ChecklistTask[];
   budgetLines: BudgetLine[];
-} | null> {
-  const row = await prisma.event.findFirst({
-    where: { isDemo: true },
-    include: {
-      tasks: { orderBy: { order: "asc" } },
-      budgetLines: { orderBy: { order: "asc" } },
-    },
-  });
-  if (!row) return null;
+}
 
+const eventInclude = {
+  tasks: { orderBy: { order: "asc" } as const },
+  budgetLines: { orderBy: { order: "asc" } as const },
+};
+
+function mapEventBundle(row: Row & { tasks: Row[]; budgetLines: Row[] }): EventBundle {
   const event: DemoEvent = {
-    type: row.type,
-    coupleNames: row.coupleNames,
-    date: row.date,
-    dateLabel: row.dateLabel,
-    daysAway: row.daysAway,
-    location: row.location,
-    guests: row.guests,
-    totalBudget: row.totalBudget,
-    spent: row.spent,
-    booked: row.booked,
-    shortlisted: row.shortlisted,
+    type: row.type as string,
+    coupleNames: row.coupleNames as string,
+    date: row.date as string,
+    dateLabel: row.dateLabel as string,
+    daysAway: row.daysAway as number,
+    location: row.location as string,
+    guests: row.guests as number,
+    totalBudget: row.totalBudget as number,
+    spent: row.spent as number,
+    booked: row.booked as number,
+    shortlisted: row.shortlisted as number,
   };
   const tasks: ChecklistTask[] = row.tasks.map((t) => ({
-    id: t.taskKey,
-    title: t.title,
-    phase: t.phase,
-    done: t.done,
-    dueLabel: t.dueLabel,
+    id: t.taskKey as string,
+    title: t.title as string,
+    phase: t.phase as string,
+    done: t.done as boolean,
+    dueLabel: t.dueLabel as string,
     category: t.category as ChecklistTask["category"],
-    aiSuggested: t.aiSuggested || undefined,
+    aiSuggested: (t.aiSuggested as boolean) || undefined,
   }));
   const budgetLines: BudgetLine[] = row.budgetLines.map((b) => ({
-    category: b.category,
-    icon: b.icon,
-    allocated: b.allocated,
-    spent: b.spent,
+    category: b.category as string,
+    icon: b.icon as string,
+    allocated: b.allocated as number,
+    spent: b.spent as number,
     status: b.status as BudgetLine["status"],
   }));
   return { event, tasks, budgetLines };
 }
 
+export async function getDemoEvent(): Promise<EventBundle | null> {
+  const row = await prisma.event.findFirst({ where: { isDemo: true }, include: eventInclude });
+  return row ? mapEventBundle(row) : null;
+}
+
+/** The signed-in family user's event, or null if they don't have one yet. */
+export async function getEventForUser(userId: string): Promise<EventBundle | null> {
+  const row = await prisma.event.findFirst({
+    where: { userId },
+    include: eventInclude,
+    orderBy: { id: "asc" },
+  });
+  return row ? mapEventBundle(row) : null;
+}
+
+/** The user's event, falling back to the demo event so the dashboard is never empty. */
+export async function getActiveEvent(userId: string): Promise<EventBundle | null> {
+  return (await getEventForUser(userId)) ?? (await getDemoEvent());
+}
+
 /* ------------------------------------------------------- vendor CRM (demo) */
+
+function mapLead(l: Row): Lead {
+  return {
+    id: l.leadKey as string,
+    customer: l.customer as string,
+    event: l.event as string,
+    date: l.date as string,
+    location: l.location as string,
+    budget: l.budget as number,
+    status: l.status as Lead["status"],
+    message: l.message as string,
+    receivedAt: l.receivedAt as string,
+  };
+}
 
 export async function getLeads(): Promise<Lead[]> {
   const rows = await prisma.lead.findMany({ orderBy: { createdAt: "desc" } });
-  return rows.map((l) => ({
-    id: l.leadKey,
-    customer: l.customer,
-    event: l.event,
-    date: l.date,
-    location: l.location,
-    budget: l.budget,
-    status: l.status as Lead["status"],
-    message: l.message,
-    receivedAt: l.receivedAt,
-  }));
+  return rows.map(mapLead);
+}
+
+/** Leads for the vendor owned by this user, or null if the user has no vendor. */
+export async function getLeadsForUser(userId: string): Promise<Lead[] | null> {
+  const vendor = await prisma.vendor.findFirst({
+    where: { userId },
+    select: { id: true },
+  });
+  if (!vendor) return null;
+  const rows = await prisma.lead.findMany({
+    where: { vendorId: vendor.id },
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map(mapLead);
 }
 
 export async function getCalendarBookings(): Promise<CalendarBooking[]> {
