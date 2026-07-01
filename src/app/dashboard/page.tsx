@@ -98,6 +98,13 @@ export default async function DashboardOverviewPage() {
   const checklistTasks = demo?.tasks ?? [];
   const budgetLines = demo?.budgetLines ?? [];
 
+  const displayName =
+    session?.user?.role === "admin"
+      ? "Admin"
+      : session?.user?.name?.trim().split(/\s+/)[0] ||
+        session?.user?.email?.split("@")[0] ||
+        "there";
+
   const tasksDone = checklistTasks.filter((t) => t.done).length;
   const tasksTotal = checklistTasks.length;
   const tasksPct = tasksTotal > 0 ? Math.round((tasksDone / tasksTotal) * 100) : 0;
@@ -162,35 +169,54 @@ export default async function DashboardOverviewPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <Badge variant="gold" className="gap-1.5">
-                  <Sparkles className="size-3.5" /> Your active event
+                  <Sparkles className="size-3.5" />{" "}
+                  {sampleEvent ? "Your active event" : "Let's get started"}
                 </Badge>
                 <h1 className="mt-3 font-serif text-3xl font-semibold leading-tight sm:text-4xl">
-                  Namaskaram, Anjali 🌸
+                  Namaskaram, {displayName} 🌸
                 </h1>
                 <p className="mt-1.5 max-w-xl text-cream-100/85">
-                  Your {sampleEvent?.type.toLowerCase()} is{" "}
-                  <span className="font-semibold text-gold-200">
-                    {sampleEvent?.daysAway} days away
-                  </span>{" "}
-                  and you&apos;re {tasksPct}% of the way there. Here&apos;s where everything stands.
+                  {sampleEvent ? (
+                    <>
+                      Your {sampleEvent.type.toLowerCase()} is{" "}
+                      <span className="font-semibold text-gold-200">
+                        {sampleEvent.daysAway} days away
+                      </span>{" "}
+                      and you&apos;re {tasksPct}% of the way there. Here&apos;s where everything
+                      stands.
+                    </>
+                  ) : (
+                    <>
+                      You don&apos;t have an event yet — build a checklist, set a budget and start
+                      matching with vendors in minutes.
+                    </>
+                  )}
                 </p>
-                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-cream-100/80">
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="size-4 text-gold-300" /> {sampleEvent?.location}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Users className="size-4 text-gold-300" /> {sampleEvent?.guests} guests
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <CalendarCheck className="size-4 text-gold-300" /> {sampleEvent?.dateLabel}
-                  </span>
-                </div>
+                {sampleEvent && (
+                  <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-cream-100/80">
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPin className="size-4 text-gold-300" /> {sampleEvent.location}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Users className="size-4 text-gold-300" /> {sampleEvent.guests} guests
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarCheck className="size-4 text-gold-300" /> {sampleEvent.dateLabel}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex shrink-0 gap-2">
                 <Button asChild variant="gold">
-                  <Link href="/vendors">
-                    Find vendors <ArrowRight className="size-4" />
-                  </Link>
+                  {sampleEvent ? (
+                    <Link href="/vendors">
+                      Find vendors <ArrowRight className="size-4" />
+                    </Link>
+                  ) : (
+                    <Link href="/plan">
+                      Start planning <ArrowRight className="size-4" />
+                    </Link>
+                  )}
                 </Button>
               </div>
             </div>
