@@ -28,7 +28,12 @@ export interface VendorListingInput {
   highlights: string[];
   eventTypes: string[];
   packages: { name: string; price: number; unit?: string; features: string[] }[];
+  /** Optional cover photo as a data URL (e.g. "data:image/jpeg;base64,..."). */
+  coverImage?: string | null;
 }
+
+// Client-side resizing keeps this small, but reject anything unreasonable server-side too.
+const MAX_COVER_IMAGE_LENGTH = 3_000_000; // ~2.2MB decoded
 
 // Deterministic brand gradient + gallery seeds so new listings look on-brand.
 const GRADIENTS: [string, string, string][] = [
@@ -72,6 +77,18 @@ export async function createVendorListing(input: VendorListingInput): Promise<Li
   if (eventTypes.length === 0) return { ok: false, error: "Pick at least one occasion you serve." };
   if (packages.length === 0) return { ok: false, error: "Add at least one package with a price." };
 
+  // Cover photo is optional. When present, only accept a well-formed image data URL of a sane size.
+  let coverImage: string | null = null;
+  if (input.coverImage) {
+    if (!/^data:image\/(png|jpe?g|webp);base64,/.test(input.coverImage)) {
+      return { ok: false, error: "That photo format isn't supported. Try a JPG, PNG or WebP." };
+    }
+    if (input.coverImage.length > MAX_COVER_IMAGE_LENGTH) {
+      return { ok: false, error: "That photo is too large. Please choose a smaller image." };
+    }
+    coverImage = input.coverImage;
+  }
+
   // Unique slug.
   const base = slugify(name) || "vendor";
   let slug = base;
@@ -104,6 +121,7 @@ export async function createVendorListing(input: VendorListingInput): Promise<Li
       bookings: 0,
       yearsActive: Math.max(0, Math.round(input.yearsActive || 0)),
       gradient,
+      coverImage,
       services: input.services.filter(Boolean),
       highlights: input.highlights.filter(Boolean),
       serviceAreas: cleanAreas.length ? cleanAreas : [loc.city],

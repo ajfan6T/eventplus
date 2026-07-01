@@ -78,6 +78,7 @@ function toVendor(v: Row): Vendor {
     bookings: v.bookings as number,
     yearsActive: v.yearsActive as number,
     gradient: v.gradient as [string, string, string],
+    coverImage: (v.coverImage as string | null) ?? null,
     services: v.services as string[],
     highlights: v.highlights as string[],
     serviceAreas: v.serviceAreas as string[],

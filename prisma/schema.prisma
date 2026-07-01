@@ -63,6 +63,7 @@ model Vendor {
   bookings      Int
   yearsActive   Int
   gradient      Json // [from, via, to]
+  coverImage    String? // optional user-uploaded cover photo, stored as a data URL
   services      Json // string[]
   highlights    Json // string[]
   serviceAreas  Json // string[]

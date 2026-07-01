@@ -111,6 +111,7 @@ export default async function VendorDetailPage({
           <Reveal>
             <GradientVisual
               gradient={vendor.gradient}
+              image={vendor.coverImage}
               className="aspect-[16/10] w-full rounded-3xl shadow-lift ring-1 ring-cream-50/30 sm:aspect-[21/9]"
             >
               <div className="flex h-full flex-col justify-between p-6 sm:p-8 lg:p-10">

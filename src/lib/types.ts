@@ -74,6 +74,8 @@ export interface Vendor {
   yearsActive: number;
   /** gradient seed colors for cover + gallery */
   gradient: [string, string, string];
+  /** optional user-uploaded cover photo (data URL); falls back to `gradient` when absent */
+  coverImage?: string | null;
   services: string[];
   highlights: string[];
   serviceAreas: string[];

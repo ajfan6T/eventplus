@@ -6,6 +6,13 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  // Vendor onboarding accepts an optional cover photo (sent as a data URL through
+  // the createVendorListing Server Action), so raise the default 1MB body limit.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "6mb",
+    },
+  },
   // Keep Prisma + the libSQL native driver out of the bundler; require them at
   // runtime from node_modules (native addons can't be bundled).
   serverExternalPackages: [

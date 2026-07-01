@@ -15,6 +15,7 @@ export function VendorCard({ vendor }: { vendor: Vendor }) {
       <div className="relative">
         <GradientVisual
           gradient={vendor.gradient}
+          image={vendor.coverImage}
           className="aspect-[4/3] w-full"
         >
           <div className="flex h-full flex-col justify-between p-4">

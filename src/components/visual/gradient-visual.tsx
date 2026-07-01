@@ -28,6 +28,7 @@ function fromSeed(seed: number): { colors: string[]; angle: number } {
 export function GradientVisual({
   seed = 1,
   gradient,
+  image,
   className,
   withMandala = true,
   children,
@@ -35,6 +36,8 @@ export function GradientVisual({
 }: {
   seed?: number;
   gradient?: [string, string, string];
+  /** A real uploaded cover photo (data URL). When present, this replaces the gradient. */
+  image?: string | null;
   className?: string;
   withMandala?: boolean;
   overlay?: boolean;
@@ -43,6 +46,19 @@ export function GradientVisual({
   const { colors, angle } = gradient
     ? { colors: gradient, angle: 150 }
     : fromSeed(seed);
+
+  if (image) {
+    return (
+      <div className={cn("relative overflow-hidden bg-cream-200", className)}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- user-uploaded data URL, not an optimizable asset */}
+        <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        {overlay && (
+          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-maroon-900/60 to-transparent" />
+        )}
+        {children && <div className="relative h-full w-full">{children}</div>}
+      </div>
+    );
+  }
 
   return (
     <div
