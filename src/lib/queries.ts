@@ -107,8 +107,10 @@ export async function getEventCategory(slug: string): Promise<EventCategory | un
 
 /* ------------------------------------------------------------------ vendors */
 
+// Public catalog surfaces only show APPROVED (verified) listings.
 export async function getVendors(): Promise<Vendor[]> {
   const rows = await prisma.vendor.findMany({
+    where: { verified: true },
     include: vendorInclude,
     orderBy: { order: "asc" },
   });
@@ -116,13 +118,29 @@ export async function getVendors(): Promise<Vendor[]> {
 }
 
 export async function getVendor(slug: string): Promise<Vendor | undefined> {
+  // Not verified-gated: the detail page / a vendor previewing their own listing.
   const row = await prisma.vendor.findUnique({ where: { slug }, include: vendorInclude });
   return row ? toVendor(row) : undefined;
 }
 
 export async function getVendorSlugs(): Promise<string[]> {
-  const rows = await prisma.vendor.findMany({ select: { slug: true } });
+  const rows = await prisma.vendor.findMany({ where: { verified: true }, select: { slug: true } });
   return rows.map((r) => r.slug);
+}
+
+/** The listing owned by a vendor user (for their dashboard), verified or not. */
+export async function getVendorForUser(userId: string): Promise<Vendor | null> {
+  const row = await prisma.vendor.findFirst({ where: { userId }, include: vendorInclude });
+  return row ? toVendor(row) : null;
+}
+
+/** All listings incl. unapproved, for the admin approval view. */
+export async function getAllVendorsForAdmin(): Promise<(Vendor & { verified: boolean })[]> {
+  const rows = await prisma.vendor.findMany({
+    include: vendorInclude,
+    orderBy: [{ verified: "asc" }, { createdAt: "desc" }],
+  });
+  return rows.map((r) => ({ ...toVendor(r), verified: r.verified }));
 }
 
 export async function getVendorsByEventType(eventType: string): Promise<Vendor[]> {
@@ -133,6 +151,7 @@ export async function getVendorsByEventType(eventType: string): Promise<Vendor[]
 
 export async function getFeaturedVendors(count = 6): Promise<Vendor[]> {
   const rows = await prisma.vendor.findMany({
+    where: { verified: true },
     include: vendorInclude,
     orderBy: [{ rating: "desc" }, { reviewCount: "desc" }],
     take: count,

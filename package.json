@@ -11,8 +11,10 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:prod": "tsx prisma/seed.prod.ts",
     "db:reset": "prisma migrate reset --force && tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "make-admin": "tsx prisma/make-admin.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",

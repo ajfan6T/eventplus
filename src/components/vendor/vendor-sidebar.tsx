@@ -12,6 +12,7 @@ import {
   Star,
   Settings,
   ExternalLink,
+  Plus,
   Menu,
   LogOut,
   type LucideIcon,
@@ -25,16 +26,16 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
-import { vendorProfile } from "@/lib/data/vendor-dashboard";
 import { cn } from "@/lib/utils";
 
-type NavItem = {
-  label: string;
-  href: string;
-  icon: LucideIcon;
-  /** in-page section anchor (matched against the URL hash) */
-  hash?: string;
+export type SidebarListing = {
+  name: string;
+  rating: number;
+  reviewCount: number;
+  slug: string;
 };
+
+type NavItem = { label: string; href: string; icon: LucideIcon; hash?: string };
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/vendor#dashboard", icon: LayoutDashboard, hash: "#dashboard" },
@@ -46,17 +47,17 @@ const navItems: NavItem[] = [
   { label: "Settings", href: "/vendor#settings", icon: Settings, hash: "#settings" },
 ];
 
-const PUBLIC_PROFILE = "/vendors/marigold-decor-studio";
+function initialsOf(name: string) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("") || "V";
+}
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const onVendor = pathname === "/vendor";
-
   return (
     <nav className="flex flex-col gap-1">
       {navItems.map((item) => {
         const Icon = item.icon;
-        // The first nav item is the default active state when on /vendor.
         const active = onVendor && item.hash === "#dashboard";
         return (
           <Link
@@ -84,11 +85,16 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarBody({
+  listing,
+  onNavigate,
+}: {
+  listing?: SidebarListing | null;
+  onNavigate?: () => void;
+}) {
   return (
     <div className="flex h-full flex-col gap-6 p-5">
       <Logo />
-
       <div className="gold-rule" />
 
       <div className="flex-1">
@@ -98,26 +104,41 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         <NavLinks onNavigate={onNavigate} />
       </div>
 
-      {/* Public profile link */}
-      <Link
-        href={PUBLIC_PROFILE}
-        onClick={onNavigate}
-        className="group flex items-center gap-3 rounded-xl border border-gold-300 bg-gold-50 px-3.5 py-2.5 text-sm font-semibold text-gold-800 transition-colors hover:bg-gold-100"
-      >
-        <ExternalLink className="size-[18px] shrink-0 text-gold-600" />
-        View public profile
-      </Link>
+      {/* Public profile / create-listing link */}
+      {listing ? (
+        <Link
+          href={`/vendors/${listing.slug}`}
+          onClick={onNavigate}
+          className="group flex items-center gap-3 rounded-xl border border-gold-300 bg-gold-50 px-3.5 py-2.5 text-sm font-semibold text-gold-800 transition-colors hover:bg-gold-100"
+        >
+          <ExternalLink className="size-[18px] shrink-0 text-gold-600" />
+          View public profile
+        </Link>
+      ) : (
+        <Link
+          href="/vendor-onboarding"
+          onClick={onNavigate}
+          className="group flex items-center gap-3 rounded-xl border border-maroon-300 bg-maroon-50 px-3.5 py-2.5 text-sm font-semibold text-maroon-700 transition-colors hover:bg-maroon-100"
+        >
+          <Plus className="size-[18px] shrink-0" />
+          Create your listing
+        </Link>
+      )}
 
       {/* Vendor identity block */}
       <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-cream-100 p-3.5">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-maroon-600 to-maroon-800 font-serif text-base font-semibold text-cream-50 shadow-soft">
-          MD
+          {listing ? initialsOf(listing.name) : "V"}
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate font-serif text-sm font-semibold text-ink">
-            {vendorProfile.name}
+            {listing?.name ?? "Your workspace"}
           </p>
-          <Rating value={vendorProfile.rating} className="mt-0.5" />
+          {listing && listing.reviewCount > 0 ? (
+            <Rating value={listing.rating} className="mt-0.5" />
+          ) : (
+            <p className="text-xs text-muted-foreground">Vendor account</p>
+          )}
         </div>
         <form action={signOutAction}>
           <button
@@ -133,16 +154,16 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export function VendorSidebar() {
+export function VendorSidebar({ listing }: { listing?: SidebarListing | null }) {
   return (
     <aside className="sticky top-0 hidden h-dvh w-[260px] shrink-0 border-r border-border/70 bg-cream-50 lg:block">
-      <SidebarBody />
+      <SidebarBody listing={listing} />
     </aside>
   );
 }
 
 /** Mobile hamburger that opens the sidebar in a Sheet. */
-export function VendorSidebarMobile() {
+export function VendorSidebarMobile({ listing }: { listing?: SidebarListing | null }) {
   const [open, setOpen] = useState(false);
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -156,8 +177,7 @@ export function VendorSidebarMobile() {
         </button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0 sm:max-w-xs">
-        {/* SheetClose wraps body via onNavigate so taps close the sheet */}
-        <SidebarBody onNavigate={() => setOpen(false)} />
+        <SidebarBody listing={listing} onNavigate={() => setOpen(false)} />
         <SheetClose className="sr-only">Close</SheetClose>
       </SheetContent>
     </Sheet>

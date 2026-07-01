@@ -166,7 +166,13 @@ prisma/
   persisted via Server Actions, with founder email routing (Resend + dev console fallback).
 - ✅ **Mock payments:** a Razorpay-style demo checkout (UPI / card / net-banking) on dashboard
   bookings — simulated processing → success + mock transaction id → "Paid". No real gateway.
-- ⏭️ Real payments (Razorpay, INR) when keys are available.
+- ✅ **Vendor onboarding + admin approval:** vendors self-register a listing at
+  `/vendor-onboarding`; new listings are unverified and hidden from the marketplace until an
+  admin approves them at `/admin` (`family` / `vendor` / `admin` roles gate everything).
+- ✅ **Production-ready:** Turso (hosted libSQL) database wiring, a categories-only production
+  seed, an admin-bootstrap script, and graceful empty states. See **[DEPLOYMENT.md](DEPLOYMENT.md)**
+  for the Vercel + Turso runbook.
+- ⏭️ Real payments (Razorpay, INR) + real email (Resend) when keys are available.
 - ⏭️ Search/recommendations powered by the AI planner intake.
 
 ---

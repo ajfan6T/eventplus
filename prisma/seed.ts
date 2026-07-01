@@ -8,7 +8,11 @@ import { testimonials } from "../src/lib/data/testimonials";
 import { sampleEvent, checklistTasks, budgetLines } from "../src/lib/data/planner";
 import { leads, calendarBookings } from "../src/lib/data/vendor-dashboard";
 
-const adapter = new PrismaLibSql({ url: process.env.DATABASE_URL ?? "file:./dev.db" });
+const adapter = new PrismaLibSql(
+  process.env.DATABASE_AUTH_TOKEN
+    ? { url: process.env.DATABASE_URL!, authToken: process.env.DATABASE_AUTH_TOKEN }
+    : { url: process.env.DATABASE_URL ?? "file:./dev.db" }
+);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {

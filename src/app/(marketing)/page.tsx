@@ -352,33 +352,35 @@ export default async function HomePage() {
       </Section>
 
       {/* --------------------------------------------------- Featured vendors */}
-      <Section className="bg-cream-50">
-        <Container>
-          <Reveal>
-            <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
-              <SectionHeading
-                align="left"
-                eyebrow="Top rated"
-                title="Verified vendors, loved by Kerala families"
-                description="Hand-picked, background-checked and reviewed by real customers — no surprises."
-                className="max-w-2xl"
-              />
-              <Button asChild variant="outline" className="shrink-0">
-                <Link href="/vendors">
-                  See all vendors <ArrowRight className="size-4" />
-                </Link>
-              </Button>
-            </div>
-          </Reveal>
-          <RevealGroup className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((vendor) => (
-              <RevealItem key={vendor.slug}>
-                <VendorCard vendor={vendor} />
-              </RevealItem>
-            ))}
-          </RevealGroup>
-        </Container>
-      </Section>
+      {featured.length > 0 && (
+        <Section className="bg-cream-50">
+          <Container>
+            <Reveal>
+              <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
+                <SectionHeading
+                  align="left"
+                  eyebrow="Top rated"
+                  title="Verified vendors, loved by Kerala families"
+                  description="Hand-picked, background-checked and reviewed by real customers — no surprises."
+                  className="max-w-2xl"
+                />
+                <Button asChild variant="outline" className="shrink-0">
+                  <Link href="/vendors">
+                    See all vendors <ArrowRight className="size-4" />
+                  </Link>
+                </Button>
+              </div>
+            </Reveal>
+            <RevealGroup className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.map((vendor) => (
+                <RevealItem key={vendor.slug}>
+                  <VendorCard vendor={vendor} />
+                </RevealItem>
+              ))}
+            </RevealGroup>
+          </Container>
+        </Section>
+      )}
 
       {/* ------------------------------------------------------ Value props */}
       <Section className="bg-maroon-900 text-cream-100">
@@ -412,7 +414,8 @@ export default async function HomePage() {
       </Section>
 
       {/* ------------------------------------------------------ Testimonials */}
-      <Section className="bg-cream-100">
+      {testimonials.length > 0 && (
+        <Section className="bg-cream-100">
         <Container>
           <Reveal>
             <SectionHeading
@@ -445,7 +448,8 @@ export default async function HomePage() {
             ))}
           </RevealGroup>
         </Container>
-      </Section>
+        </Section>
+      )}
 
       {/* ------------------------------------------- Two-sided CTA band */}
       <Section className="bg-cream-50">

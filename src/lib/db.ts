@@ -1,13 +1,15 @@
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 
-// Prisma 7 uses driver adapters. libSQL reads the local SQLite file and ships
-// ABI-stable N-API prebuilds (works on bleeding-edge Node). Swap the adapter
-// (or use a Postgres adapter) for production.
+// Prisma 7 uses driver adapters. libSQL reads a local SQLite file in dev and a
+// hosted Turso database in production — the same adapter, so no code change to
+// deploy: set DATABASE_URL (libsql://…) + DATABASE_AUTH_TOKEN in the host.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function createPrisma() {
-  const adapter = new PrismaLibSql({ url: process.env.DATABASE_URL ?? "file:./dev.db" });
+  const url = process.env.DATABASE_URL ?? "file:./dev.db";
+  const authToken = process.env.DATABASE_AUTH_TOKEN; // required for remote Turso, unused for local file
+  const adapter = new PrismaLibSql(authToken ? { url, authToken } : { url });
   return new PrismaClient({ adapter });
 }
 

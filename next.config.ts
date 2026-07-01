@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Pin the workspace root — a stray package-lock.json in the home dir was
-  // causing Next.js to infer the wrong root.
+  // Pin the workspace root to the project dir (portable across machines & CI).
+  // Avoids Next.js inferring the wrong root when a stray lockfile sits above us.
   turbopack: {
-    root: "/Users/majfan/eventplus",
+    root: process.cwd(),
   },
   // Keep Prisma + the libSQL native driver out of the bundler; require them at
   // runtime from node_modules (native addons can't be bundled).
