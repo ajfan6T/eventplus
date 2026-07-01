@@ -164,7 +164,9 @@ prisma/
   / `admin` roles, protected + role-routed dashboards scoped to the signed-in user.
 - ✅ **Round 3 — Live flows + email:** booking requests → vendor leads and corporate inquiries
   persisted via Server Actions, with founder email routing (Resend + dev console fallback).
-- ⏭️ Payments (Razorpay, INR) — needs live/test keys to build & verify.
+- ✅ **Mock payments:** a Razorpay-style demo checkout (UPI / card / net-banking) on dashboard
+  bookings — simulated processing → success + mock transaction id → "Paid". No real gateway.
+- ⏭️ Real payments (Razorpay, INR) when keys are available.
 - ⏭️ Search/recommendations powered by the AI planner intake.
 
 ---

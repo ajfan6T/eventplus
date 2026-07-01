@@ -25,6 +25,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Checklist } from "@/components/dashboard/checklist";
 import { BudgetTracker } from "@/components/dashboard/budget-tracker";
+import { PaymentDialog } from "@/components/payment/payment-dialog";
 import { VendorCard } from "@/components/vendors/vendor-card";
 import { KasavuDivider, Sparkle } from "@/components/decor/motifs";
 import { auth } from "@/auth";
@@ -382,6 +383,14 @@ export default async function DashboardOverviewPage() {
                     <span className="font-serif text-base font-semibold text-maroon-700">
                       {formatINR(b.amount)}
                     </span>
+                    {balanceDue && (
+                      <PaymentDialog
+                        amount={b.amount}
+                        title={b.type}
+                        payee={b.title}
+                        triggerLabel="Pay balance"
+                      />
+                    )}
                   </div>
                 </li>
               );
