@@ -10,6 +10,7 @@ import {
   Phone,
   CheckCircle2,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatINR } from "@/lib/utils";
 import { site } from "@/lib/data/site";
+import { createBookingRequest } from "@/lib/actions/bookings";
 import type { Vendor } from "@/lib/types";
 
 export function BookingPanel({ vendor }: { vendor: Vendor }) {
@@ -46,13 +48,32 @@ export function BookingPanel({ vendor }: { vendor: Vendor }) {
 
   const [open, setOpen] = React.useState(false);
   const [sent, setSent] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const [form, setForm] = React.useState({ name: "", phone: "", message: "" });
 
   const selectedPackage =
     vendor.packages.find((p) => p.name === packageName) ?? vendor.packages[0];
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (submitting) return;
+    setError(null);
+    setSubmitting(true);
+    const res = await createBookingRequest({
+      vendorSlug: vendor.slug,
+      name: form.name,
+      phone: form.phone,
+      message: form.message,
+      packageName: selectedPackage?.name,
+      date,
+      guests,
+    });
+    setSubmitting(false);
+    if (!res.ok) {
+      setError(res.error ?? "Something went wrong. Please try again.");
+      return;
+    }
     setSent(true);
   }
 
@@ -62,6 +83,7 @@ export function BookingPanel({ vendor }: { vendor: Vendor }) {
       // reset after the close animation so the success state doesn't flash
       window.setTimeout(() => {
         setSent(false);
+        setError(null);
         setForm({ name: "", phone: "", message: "" });
       }, 200);
     }
@@ -254,16 +276,33 @@ export function BookingPanel({ vendor }: { vendor: Vendor }) {
                     {date ? ` · ${date}` : ""}
                     {guests ? ` · ${guests} guests` : ""}
                   </div>
+
+                  {error && (
+                    <p
+                      role="alert"
+                      className="rounded-xl border border-destructive/30 bg-destructive/10 px-3.5 py-2.5 text-sm font-medium text-destructive"
+                    >
+                      {error}
+                    </p>
+                  )}
                 </div>
 
                 <DialogFooter className="mt-5">
                   <DialogClose asChild>
-                    <Button type="button" variant="ghost">
+                    <Button type="button" variant="ghost" disabled={submitting}>
                       Cancel
                     </Button>
                   </DialogClose>
-                  <Button type="submit" variant="gold">
-                    Send request <ArrowRight className="size-4" />
+                  <Button type="submit" variant="gold" disabled={submitting}>
+                    {submitting ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" /> Sending…
+                      </>
+                    ) : (
+                      <>
+                        Send request <ArrowRight className="size-4" />
+                      </>
+                    )}
                   </Button>
                 </DialogFooter>
               </form>

@@ -194,3 +194,20 @@ model CalendarBooking {
   type       String
   value      Int
 }
+
+// ------------------------------------------------------- Corporate lane
+
+model CorporateInquiry {
+  id          String   @id @default(cuid())
+  company     String
+  contactName String
+  email       String
+  phone       String?
+  itPark      String?
+  eventType   String?
+  headcount   String?
+  budgetBand  String?
+  preferredAt String?
+  message     String?
+  createdAt   DateTime @default(now())
+}

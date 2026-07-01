@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Clock,
   Send,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ import {
   headcountOptions,
   budgetBandOptions,
 } from "@/lib/data/corporate";
+import { submitCorporateInquiry } from "@/lib/actions/corporate";
 
 type FormState = {
   company: string;
@@ -81,13 +83,35 @@ function buildMailto(form: FormState) {
 export function InquiryForm() {
   const [form, setForm] = React.useState<FormState>(initialState);
   const [submitted, setSubmitted] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (submitting) return;
+    setError(null);
+    setSubmitting(true);
+    const res = await submitCorporateInquiry({
+      company: form.company,
+      contactName: form.contact,
+      email: form.email,
+      phone: form.phone,
+      itPark: form.itPark,
+      eventType: form.eventType,
+      headcount: form.headcount,
+      budgetBand: form.budget,
+      preferredAt: form.date,
+      message: form.message,
+    });
+    setSubmitting(false);
+    if (!res.ok) {
+      setError(res.error ?? "Something went wrong. Please try again or email us directly.");
+      return;
+    }
     setSubmitted(true);
   }
 
@@ -332,14 +356,31 @@ export function InquiryForm() {
         </div>
       </div>
 
+      {error && (
+        <p
+          role="alert"
+          className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive"
+        >
+          {error}
+        </p>
+      )}
+
       <div className="mt-7 flex flex-col gap-4 border-t border-border/60 pt-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">
           By submitting, your brief is routed straight to our founder. No spam, no
           sales floor — just a tailored proposal.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button type="submit" variant="gold" size="lg" className="sm:px-7">
-            <Send className="size-4" /> Send my brief
+          <Button type="submit" variant="gold" size="lg" disabled={submitting} className="sm:px-7">
+            {submitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" /> Sending…
+              </>
+            ) : (
+              <>
+                <Send className="size-4" /> Send my brief
+              </>
+            )}
           </Button>
           <Button asChild type="button" variant="ghost" size="lg">
             <Link href={buildMailto(form)}>

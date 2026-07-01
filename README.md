@@ -47,6 +47,8 @@ realistic mock data. The backend (auth, database, payments, real lead routing) l
 | Database     | **Prisma 7** + SQLite (dev) → Postgres-ready, libSQL driver adapter |
 | Data access  | Server-only query layer (`src/lib/queries.ts`)                |
 | Auth         | **Auth.js v5** (NextAuth) — credentials + optional Google, JWT sessions, roles |
+| Email        | **Resend** (transactional) with a dev console fallback        |
+| Server logic | Server Actions for booking / inquiry writes                    |
 
 ## 🎨 Design — "Festive Kerala Premium"
 
@@ -148,8 +150,10 @@ prisma/
   Google), `family` / `vendor` / `admin` roles, JWT sessions. `/dashboard` and `/vendor` are
   protected and role-routed; each loads the signed-in user's own data (with a graceful demo
   fallback for brand-new accounts).
-- **Corporate inquiries** show a success state and build a `mailto:` to the founder address
-  (`src/lib/data/site.ts → site.founderEmail`); real routing comes with the backend.
+- **Live flows are persisted (Phase Two, Round 3).** Vendor booking requests write real leads
+  (visible in the vendor CRM) and corporate inquiries write to the DB — both via Server Actions
+  that also email the founder (`site.founderEmail`) through Resend. With no `RESEND_API_KEY`,
+  emails are logged to the server console so the flow works offline; a `mailto:` fallback remains.
 - **Kerala first** — content and vendors target Kochi, Trivandrum, Kozhikode, Thrissur and beyond.
 
 ## 🛣️ Phase Two roadmap
@@ -158,8 +162,9 @@ prisma/
   server-side query layer; catalog + dashboard reads now hit the DB.
 - ✅ **Round 2 — Auth & roles:** Auth.js (email/password + optional Google), `family` / `vendor`
   / `admin` roles, protected + role-routed dashboards scoped to the signed-in user.
-- ⏭️ Live booking & lead flows persisted (booking requests → vendor leads; corporate inquiries).
-- ⏭️ Email routing (Resend) and payments (Razorpay, INR).
+- ✅ **Round 3 — Live flows + email:** booking requests → vendor leads and corporate inquiries
+  persisted via Server Actions, with founder email routing (Resend + dev console fallback).
+- ⏭️ Payments (Razorpay, INR) — needs live/test keys to build & verify.
 - ⏭️ Search/recommendations powered by the AI planner intake.
 
 ---
