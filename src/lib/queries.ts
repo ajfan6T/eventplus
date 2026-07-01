@@ -107,7 +107,8 @@ export async function getEventCategory(slug: string): Promise<EventCategory | un
 
 /* ------------------------------------------------------------------ vendors */
 
-// Public catalog surfaces only show APPROVED (verified) listings.
+// Public catalog surfaces only show listings not manually hidden by an admin (verified = true;
+// new listings are created verified so they're visible immediately — see createVendorListing).
 export async function getVendors(): Promise<Vendor[]> {
   const rows = await prisma.vendor.findMany({
     where: { verified: true },
@@ -134,7 +135,7 @@ export async function getVendorForUser(userId: string): Promise<Vendor | null> {
   return row ? toVendor(row) : null;
 }
 
-/** All listings incl. unapproved, for the admin approval view. */
+/** All listings incl. hidden ones, for the admin listings view. */
 export async function getAllVendorsForAdmin(): Promise<(Vendor & { verified: boolean })[]> {
   const rows = await prisma.vendor.findMany({
     include: vendorInclude,

@@ -46,7 +46,7 @@ function hashInt(s: string) {
   return h;
 }
 
-/** Self-serve vendor listing creation. New listings are unverified (pending admin approval). */
+/** Self-serve vendor listing creation. New listings go live immediately (no admin approval gate). */
 export async function createVendorListing(input: VendorListingInput): Promise<ListingResult> {
   const session = await auth();
   if (!session?.user?.id) return { ok: false, error: "Please sign in as a vendor first." };
@@ -99,7 +99,7 @@ export async function createVendorListing(input: VendorListingInput): Promise<Li
       reviewCount: 0,
       startingPrice: Math.round(input.startingPrice),
       priceUnit: input.priceUnit || "package",
-      verified: false,
+      verified: true,
       responseTime: input.responseTime || "within a day",
       bookings: 0,
       yearsActive: Math.max(0, Math.round(input.yearsActive || 0)),
@@ -129,7 +129,7 @@ export async function createVendorListing(input: VendorListingInput): Promise<Li
   return { ok: true };
 }
 
-/** Admin-only: approve or unapprove a vendor listing (by unique slug). */
+/** Admin-only: manually hide/unhide a vendor listing from the marketplace (by unique slug). */
 export async function setVendorApproval(slug: string, approved: boolean): Promise<ListingResult> {
   const session = await auth();
   if (session?.user?.role !== "admin") return { ok: false, error: "Not authorized." };

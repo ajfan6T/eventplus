@@ -69,7 +69,7 @@ const benefits = [
     icon: BadgeCheck,
     title: "Verified badge & trust",
     description:
-      "Pass our quick vetting and wear the green verified badge. Reviews from real Kerala families help you stand out and win more.",
+      "Every listing carries the green verified badge from the moment it's published. Reviews from real Kerala families help you stand out and win more.",
   },
   {
     icon: Banknote,
@@ -85,7 +85,7 @@ const steps = [
     icon: UserPlus,
     title: "Create your profile",
     description:
-      "Add your services, photos, packages and the districts you cover. Get the verified badge in 48 hours.",
+      "Add your services, photos, packages and the districts you cover. Your profile and verified badge go live instantly.",
   },
   {
     step: "02",
@@ -123,8 +123,8 @@ const faqs = [
     a: "Listing is completely free. You can build a full profile, appear in search and receive matched leads at no charge. We charge a small success fee only when a booking is confirmed through Eventplus — typically 8–12% depending on your category. There are no monthly subscriptions, setup charges or lead-purchase fees.",
   },
   {
-    q: "How does vetting and the verified badge work?",
-    a: "Every vendor goes through a quick review: we confirm your business details, check a sample of past work and look for genuine customer references. Most profiles are verified within 48 hours. Once approved you receive the green verified badge that Kerala families look for, plus priority placement in matched results.",
+    q: "How does the verified badge work?",
+    a: "Your listing and the green verified badge go live the moment you complete onboarding — no waiting on manual review. We do keep an eye on listings after they're live and may unpublish any that turn out to be inaccurate or in breach of our guidelines.",
   },
   {
     q: "When and how do payouts happen?",
@@ -136,7 +136,7 @@ const faqs = [
   },
   {
     q: "How many leads will I receive?",
-    a: "It depends on your category, coverage area, ratings and how quickly you respond — vendors who reply within a few hours and keep an updated calendar see noticeably more bookings. New profiles usually start receiving matched enquiries within the first week of being verified.",
+    a: "It depends on your category, coverage area, ratings and how quickly you respond — vendors who reply within a few hours and keep an updated calendar see noticeably more bookings. New profiles usually start receiving matched enquiries within the first week of going live.",
   },
   {
     q: "Can I manage my team and multiple cities?",
@@ -201,7 +201,7 @@ export default function ForVendorsPage() {
                 </span>
                 <span className="size-1 rounded-full bg-cream-400" />
                 <span className="inline-flex items-center gap-1.5">
-                  <ShieldCheck className="size-4 text-green-600" /> Verified in 48 hrs
+                  <ShieldCheck className="size-4 text-green-600" /> Verified instantly
                 </span>
               </div>
             </Reveal>
@@ -630,8 +630,8 @@ export default function ForVendorsPage() {
             Ready to fill your calendar? List free today
           </h2>
           <p className="max-w-xl text-pretty text-lg text-cream-200/70">
-            Build your profile in minutes, get verified within 48 hours and start receiving
-            matched leads. No subscription, no upfront cost — you only pay when you get booked.
+            Build your profile in minutes, go live instantly with the verified badge and start
+            receiving matched leads. No subscription, no upfront cost — you only pay when you get booked.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" variant="gold">
@@ -649,7 +649,7 @@ export default function ForVendorsPage() {
             </Button>
           </div>
           <p className="mt-2 text-xs text-cream-200/50">
-            Free to list · Verified in 48 hours · Pay only per booking
+            Free to list · Verified instantly · Pay only per booking
           </p>
         </Container>
       </section>

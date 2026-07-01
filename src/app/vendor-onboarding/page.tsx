@@ -47,8 +47,8 @@ export default async function VendorOnboardingPage() {
               List your services on <span className="text-maroon-700">Eventplus</span>
             </h1>
             <p className="max-w-2xl text-pretty text-muted-foreground">
-              Tell Kerala families what you offer. Once our team reviews your listing, it goes live
-              in the marketplace and you&rsquo;ll start receiving leads — free to list.
+              Tell Kerala families what you offer. Your listing goes live in the marketplace the
+              moment you submit, so you can start receiving leads right away — free to list.
             </p>
           </div>
           <VendorOnboardingForm />

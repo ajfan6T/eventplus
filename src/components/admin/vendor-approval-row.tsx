@@ -37,11 +37,11 @@ export function VendorApprovalRow({ vendor }: { vendor: AdminVendor }) {
           <p className="truncate font-serif text-lg font-semibold text-ink">{vendor.name}</p>
           {vendor.verified ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-semibold text-green-700">
-              <ShieldCheck className="size-3" /> Approved
+              <ShieldCheck className="size-3" /> Live
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-semibold text-gold-800">
-              <Clock className="size-3" /> Pending
+              <Clock className="size-3" /> Hidden
             </span>
           )}
         </div>
@@ -60,11 +60,11 @@ export function VendorApprovalRow({ vendor }: { vendor: AdminVendor }) {
       <div className="flex shrink-0 gap-2">
         {vendor.verified ? (
           <Button variant="outline" size="sm" disabled={busy} onClick={() => toggle(false)}>
-            {busy ? <Loader2 className="size-4 animate-spin" /> : <X className="size-4" />} Unapprove
+            {busy ? <Loader2 className="size-4 animate-spin" /> : <X className="size-4" />} Hide
           </Button>
         ) : (
           <Button variant="secondary" size="sm" disabled={busy} onClick={() => toggle(true)}>
-            {busy ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Approve
+            {busy ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Publish
           </Button>
         )}
       </div>

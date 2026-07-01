@@ -97,11 +97,11 @@ export default async function VendorDashboardPage() {
                 <div className="flex flex-col items-start gap-2 rounded-2xl bg-cream-50/10 px-4 py-3 backdrop-blur sm:items-end">
                   {listing.verified ? (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/20 px-2.5 py-1 text-xs font-semibold text-green-200">
-                      <ShieldCheck className="size-3.5" /> Approved & live
+                      <ShieldCheck className="size-3.5" /> Live in marketplace
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-500/20 px-2.5 py-1 text-xs font-semibold text-gold-100">
-                      <Clock className="size-3.5" /> Pending review
+                      <Clock className="size-3.5" /> Hidden by admin
                     </span>
                   )}
                   <Link
@@ -171,7 +171,7 @@ export default async function VendorDashboardPage() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   {listing.verified
                     ? "Enquiries from families will land here as they find your listing."
-                    : "Once your listing is approved, enquiries will appear here."}
+                    : "Your listing is currently hidden — enquiries will appear once it's live again."}
                 </p>
               </div>
             )}
@@ -312,7 +312,7 @@ function ProfileCompletenessCard({ listing }: { listing: Vendor & { verified?: b
   const items = [
     { label: "Business details", done: Boolean(listing.about), icon: UserRoundCheck },
     { label: "Service packages", done: listing.packages.length > 0, icon: FileText },
-    { label: "Approved & verified", done: Boolean(listing.verified), icon: CircleCheck },
+    { label: "Live in marketplace", done: Boolean(listing.verified), icon: CircleCheck },
     ...staticCompletenessItems,
   ];
   const completed = items.filter((i) => i.done).length;

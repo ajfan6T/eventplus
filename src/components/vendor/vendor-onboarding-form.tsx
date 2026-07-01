@@ -316,7 +316,7 @@ export function VendorOnboardingForm() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-muted-foreground">
-          Your listing goes live once our team approves it.
+          Your listing goes live in the marketplace immediately.
         </p>
         <Button type="submit" variant="gold" size="lg" disabled={submitting}>
           {submitting ? (
@@ -325,7 +325,7 @@ export function VendorOnboardingForm() {
             </>
           ) : (
             <>
-              Submit for review <ArrowRight className="size-4" />
+              Publish my listing <ArrowRight className="size-4" />
             </>
           )}
         </Button>
