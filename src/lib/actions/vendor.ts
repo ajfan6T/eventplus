@@ -157,3 +157,17 @@ export async function setVendorApproval(slug: string, approved: boolean): Promis
   revalidatePath("/");
   return { ok: true };
 }
+
+/**
+ * Admin-only: permanently delete a vendor listing (by unique slug). Cascades to its
+ * packages/reviews; any CRM leads that pointed at it are detached (kept, vendor unset).
+ */
+export async function deleteVendorListing(slug: string): Promise<ListingResult> {
+  const session = await auth();
+  if (session?.user?.role !== "admin") return { ok: false, error: "Not authorized." };
+  await prisma.vendor.delete({ where: { slug } });
+  revalidatePath("/admin");
+  revalidatePath("/vendors");
+  revalidatePath("/");
+  return { ok: true };
+}

@@ -145,6 +145,42 @@ export async function getAllVendorsForAdmin(): Promise<(Vendor & { verified: boo
   return rows.map((r) => ({ ...toVendor(r), verified: r.verified }));
 }
 
+/* -------------------------------------------------------------------- users */
+
+export type AdminUser = {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string;
+  city: string | null;
+  createdAt: Date;
+  vendorSlug: string | null;
+  vendorName: string | null;
+  eventCount: number;
+};
+
+/** All accounts for the admin directory, incl. their vendor listing (if any). */
+export async function getAllUsersForAdmin(): Promise<AdminUser[]> {
+  const rows = await prisma.user.findMany({
+    include: {
+      vendor: { select: { slug: true, name: true } },
+      _count: { select: { events: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    city: u.city,
+    createdAt: u.createdAt,
+    vendorSlug: u.vendor?.slug ?? null,
+    vendorName: u.vendor?.name ?? null,
+    eventCount: u._count.events,
+  }));
+}
+
 export async function getVendorsByEventType(eventType: string): Promise<Vendor[]> {
   // eventTypes is a Json array; filter in app code (SQLite has no array ops).
   const all = await getVendors();

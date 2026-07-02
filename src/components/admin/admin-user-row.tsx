@@ -3,8 +3,9 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, X, Clock, ShieldCheck, ExternalLink, Loader2, MapPin, Trash2 } from "lucide-react";
+import { Loader2, MapPin, Store, CalendarDays, ExternalLink, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogTrigger,
@@ -15,85 +16,75 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { setVendorApproval, deleteVendorListing } from "@/lib/actions/vendor";
-import { formatINR } from "@/lib/utils";
+import { deleteUserAccount } from "@/lib/actions/admin";
+import type { AdminUser } from "@/lib/queries";
 
-export type AdminVendor = {
-  slug: string;
-  name: string;
-  categoryLabel: string;
-  city: string;
-  startingPrice: number;
-  priceUnit: string;
-  verified: boolean;
+const roleBadge: Record<string, { label: string; variant: "maroon" | "green" | "gold" | "muted" }> = {
+  admin: { label: "Admin", variant: "maroon" },
+  vendor: { label: "Vendor", variant: "gold" },
+  family: { label: "Family", variant: "green" },
 };
 
-export function VendorApprovalRow({ vendor }: { vendor: AdminVendor }) {
+export function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
   const router = useRouter();
-  const [busy, setBusy] = React.useState(false);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState<string | null>(null);
 
-  async function toggle(approved: boolean) {
-    if (busy) return;
-    setBusy(true);
-    const res = await setVendorApproval(vendor.slug, approved);
-    setBusy(false);
-    if (res.ok) router.refresh();
-  }
+  const role = roleBadge[user.role] ?? { label: user.role, variant: "muted" };
 
   async function handleDelete() {
     if (deleting) return;
     setDeleting(true);
     setDeleteError(null);
-    const res = await deleteVendorListing(vendor.slug);
+    const res = await deleteUserAccount(user.id);
     setDeleting(false);
     if (res.ok) {
       setConfirmOpen(false);
       router.refresh();
     } else {
-      setDeleteError(res.error ?? "Couldn't delete this listing.");
+      setDeleteError(res.error ?? "Couldn't delete this account.");
     }
   }
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-card sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="truncate font-serif text-lg font-semibold text-ink">{vendor.name}</p>
-          {vendor.verified ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-semibold text-green-700">
-              <ShieldCheck className="size-3" /> Live
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-semibold text-gold-800">
-              <Clock className="size-3" /> Hidden
-            </span>
-          )}
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="truncate font-serif text-lg font-semibold text-ink">
+            {user.name || "Unnamed"}
+          </p>
+          <Badge variant={role.variant}>{role.label}</Badge>
+          {isSelf && <Badge variant="outline">You</Badge>}
         </div>
         <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-          <span>{vendor.categoryLabel}</span>
+          <span>{user.email}</span>
+          {user.city && (
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="size-3.5" /> {user.city}
+            </span>
+          )}
           <span className="inline-flex items-center gap-1">
-            <MapPin className="size-3.5" /> {vendor.city}
+            <CalendarDays className="size-3.5" /> Joined{" "}
+            {user.createdAt.toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}
           </span>
-          <span>from {formatINR(vendor.startingPrice)} / {vendor.priceUnit}</span>
-          <Link href={`/vendors/${vendor.slug}`} className="inline-flex items-center gap-1 font-medium text-maroon-600 hover:underline">
-            <ExternalLink className="size-3.5" /> Preview
-          </Link>
+          {user.vendorSlug && (
+            <Link
+              href={`/vendors/${user.vendorSlug}`}
+              className="inline-flex items-center gap-1 font-medium text-maroon-600 hover:underline"
+            >
+              <Store className="size-3.5" /> {user.vendorName} <ExternalLink className="size-3" />
+            </Link>
+          )}
+          {user.eventCount > 0 && (
+            <span>
+              {user.eventCount} planning event{user.eventCount === 1 ? "" : "s"}
+            </span>
+          )}
         </p>
       </div>
 
       <div className="flex shrink-0 gap-2">
-        {vendor.verified ? (
-          <Button variant="outline" size="sm" disabled={busy} onClick={() => toggle(false)}>
-            {busy ? <Loader2 className="size-4 animate-spin" /> : <X className="size-4" />} Hide
-          </Button>
-        ) : (
-          <Button variant="secondary" size="sm" disabled={busy} onClick={() => toggle(true)}>
-            {busy ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Publish
-          </Button>
-        )}
         <Dialog
           open={confirmOpen}
           onOpenChange={(open) => {
@@ -105,6 +96,8 @@ export function VendorApprovalRow({ vendor }: { vendor: AdminVendor }) {
             <Button
               variant="outline"
               size="sm"
+              disabled={isSelf}
+              title={isSelf ? "You can't delete your own account" : undefined}
               className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive/50"
             >
               <Trash2 className="size-4" /> Delete
@@ -112,10 +105,10 @@ export function VendorApprovalRow({ vendor }: { vendor: AdminVendor }) {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Delete this listing?</DialogTitle>
+              <DialogTitle>Delete this account?</DialogTitle>
               <DialogDescription>
-                This permanently removes <strong>{vendor.name}</strong> and its packages and
-                reviews. This can&apos;t be undone.
+                This permanently removes <strong>{user.name || user.email}</strong>
+                {user.vendorSlug && " and their vendor listing"}. This can&apos;t be undone.
               </DialogDescription>
             </DialogHeader>
             {deleteError && (
